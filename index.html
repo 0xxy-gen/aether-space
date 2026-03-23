@@ -866,6 +866,38 @@
             });
         }
 
+        // Delta-V burst visual: hot-core flash + glow ring + exhaust streaks
+        function dvBurst(pos, color, plumeDir) {
+            const fMat = new THREE.MeshBasicMaterial({ color: 0xffddaa, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false });
+            const flash = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), fMat);
+            flash.position.copy(pos);
+            scene.add(flash);
+            gsap.to(flash.scale, { x: 2.5, y: 2.5, z: 2.5, duration: 0.35, ease: 'power2.out' });
+            gsap.to(fMat, { opacity: 0, duration: 0.35, ease: 'power2.in', onComplete: () => scene.remove(flash) });
+
+            const gMat = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+            const glow = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), gMat);
+            glow.position.copy(pos);
+            scene.add(glow);
+            gsap.to(glow.scale, { x: 3, y: 3, z: 3, duration: 0.9, ease: 'power1.out' });
+            gsap.to(gMat, { opacity: 0, duration: 0.9, ease: 'power2.in', onComplete: () => scene.remove(glow) });
+
+            for (let i = 0; i < 5; i++) {
+                const spread = 0.25;
+                const len = 1.2 + Math.random() * 1.5;
+                const dir = new THREE.Vector3(
+                    plumeDir.x + (Math.random() - 0.5) * spread,
+                    plumeDir.y + (Math.random() - 0.5) * spread,
+                    plumeDir.z + (Math.random() - 0.5) * spread
+                ).normalize();
+                const pGeo = new THREE.BufferGeometry().setFromPoints([pos.clone(), pos.clone().addScaledVector(dir, len)]);
+                const pMat = new THREE.LineBasicMaterial({ color: i < 2 ? 0xff6600 : 0xff2200, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+                const streak = new THREE.Line(pGeo, pMat);
+                scene.add(streak);
+                gsap.to(pMat, { opacity: 0, duration: 0.4 + Math.random() * 0.4, ease: 'power2.in', onComplete: () => scene.remove(streak) });
+            }
+        }
+
         // Realistic multi-phase Moon mission: ascent → spiral → lunar orbit → powered descent
         let moonLaunching = false;
 
@@ -1078,59 +1110,22 @@
             // Phase 0 — ascent to LEO (Hohmann arc, Kepler-timed)
             tl.to(tw, { t: 1, duration: dur0, ease: 'none',
                 onUpdate:   () => tick(c0.getPoint(tw.t)),
-                onComplete: () => { tw.t = 0; clearTrail(); }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone().negate()); tw.t = 0; clearTrail(); }
             });
             // Phase 1 — LEO parking orbit (1.5 revolutions, circular speed)
             tl.to(tw, { t: 1.5, duration: dur1, ease: 'none',
                 onUpdate:   () => tick(c1.getPoint(tw.t % 1)),
-                onComplete: () => {
-                    // ── TLI burn flash ───────────────────────────────────────────
-                    const burnPos = rocket.position.clone();
-
-                    // Orange-white hot core — small, tight
-                    const fMat = new THREE.MeshBasicMaterial({ color: 0xffddaa, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false });
-                    const flash = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), fMat);
-                    flash.position.copy(burnPos);
-                    scene.add(flash);
-                    gsap.to(flash.scale, { x: 2.5, y: 2.5, z: 2.5, duration: 0.35, ease: 'power2.out' });
-                    gsap.to(fMat, { opacity: 0, duration: 0.35, ease: 'power2.in', onComplete: () => scene.remove(flash) });
-
-                    // Red outer glow
-                    const gMat = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
-                    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), gMat);
-                    glow.position.copy(burnPos);
-                    scene.add(glow);
-                    gsap.to(glow.scale, { x: 3, y: 3, z: 3, duration: 0.9, ease: 'power1.out' });
-                    gsap.to(gMat, { opacity: 0, duration: 0.9, ease: 'power2.in', onComplete: () => scene.remove(glow) });
-
-                    // Retrograde exhaust streaks (plume fires in –e2 direction)
-                    for (let i = 0; i < 5; i++) {
-                        const spread = 0.25;
-                        const len = 1.2 + Math.random() * 1.5;
-                        const dir = new THREE.Vector3(
-                            -e2.x + (Math.random() - 0.5) * spread,
-                            -e2.y + (Math.random() - 0.5) * spread,
-                            -e2.z + (Math.random() - 0.5) * spread
-                        ).normalize();
-                        const pGeo = new THREE.BufferGeometry().setFromPoints([burnPos.clone(), burnPos.clone().addScaledVector(dir, len)]);
-                        const pMat = new THREE.LineBasicMaterial({ color: i < 2 ? 0xff6600 : 0xff2200, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
-                        const streak = new THREE.Line(pGeo, pMat);
-                        scene.add(streak);
-                        gsap.to(pMat, { opacity: 0, duration: 0.4 + Math.random() * 0.4, ease: 'power2.in', onComplete: () => scene.remove(streak) });
-                    }
-
-                    tw.t = 0; clearTrail();
-                }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone().negate()); tw.t = 0; clearTrail(); }
             });
             // Phase 2 — TLI coast (Hohmann half-ellipse, Kepler-timed: fast near Earth, slow near Moon)
             tl.to(tw, { t: 1, duration: dur2, ease: 'none',
                 onUpdate:   () => tick(c2.getPoint(tw.t)),
-                onComplete: () => { tw.t = loInsertT; clearTrail(); }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone()); tw.t = loInsertT; clearTrail(); }
             });
             // Phase 3 — Lunar parking orbit (1.5 revolutions, Moon's μ-derived period)
             tl.to(tw, { t: loInsertT + 1.5, duration: dur3, ease: 'none',
                 onUpdate:   () => tick(c3.getPoint(tw.t % 1)),
-                onComplete: () => { tw.t = 0; clearTrail(); }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone()); tw.t = 0; clearTrail(); }
             });
             // Phase 4 — Powered descent (Hohmann arc under Moon gravity, apo→peri, Kepler-timed)
             tl.to(tw, { t: 1, duration: dur4, ease: 'none',
@@ -1308,19 +1303,19 @@
 
             tl.to(tw, { t: 1, duration: dur0, ease: 'none',
                 onUpdate:   () => tick(c0.getPoint(tw.t)),
-                onComplete: () => { tw.t = 0; clearTrail(); }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone().negate()); tw.t = 0; clearTrail(); }
             });
             tl.to(tw, { t: 1.5, duration: dur1, ease: 'none',
                 onUpdate:   () => tick(c1.getPoint(tw.t % 1)),
-                onComplete: () => { tw.t = 0; clearTrail(); }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone().negate()); tw.t = 0; clearTrail(); }
             });
             tl.to(tw, { t: 1, duration: dur2, ease: 'none',
                 onUpdate:   () => tick(c2.getPoint(tw.t)),
-                onComplete: () => { tw.t = moInsertT; clearTrail(); }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone()); tw.t = moInsertT; clearTrail(); }
             });
             tl.to(tw, { t: moInsertT + 1.5, duration: dur3, ease: 'none',
                 onUpdate:   () => tick(c3.getPoint(tw.t % 1)),
-                onComplete: () => { tw.t = 0; clearTrail(); }
+                onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone()); tw.t = 0; clearTrail(); }
             });
             tl.to(tw, { t: 1, duration: dur4, ease: 'none',
                 onUpdate:   () => tick(c4.getPoint(tw.t)),
