@@ -1079,7 +1079,44 @@
             // Phase 1 — LEO parking orbit (1.5 revolutions, circular speed)
             tl.to(tw, { t: 1.5, duration: dur1, ease: 'none',
                 onUpdate:   () => tick(c1.getPoint(tw.t % 1)),
-                onComplete: () => { tw.t = 0; clearTrail(); }
+                onComplete: () => {
+                    // ── TLI burn flash ───────────────────────────────────────────
+                    const burnPos = rocket.position.clone();
+
+                    // White core flash — expands and vanishes fast
+                    const fMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false });
+                    const flash = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), fMat);
+                    flash.position.copy(burnPos);
+                    scene.add(flash);
+                    gsap.to(flash.scale, { x: 6, y: 6, z: 6, duration: 0.45, ease: 'power2.out' });
+                    gsap.to(fMat, { opacity: 0, duration: 0.45, ease: 'power2.in', onComplete: () => scene.remove(flash) });
+
+                    // Cyan outer glow — slower fade
+                    const gMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
+                    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.9, 8, 8), gMat);
+                    glow.position.copy(burnPos);
+                    scene.add(glow);
+                    gsap.to(glow.scale, { x: 5, y: 5, z: 5, duration: 1.4, ease: 'power1.out' });
+                    gsap.to(gMat, { opacity: 0, duration: 1.4, ease: 'power2.in', onComplete: () => scene.remove(glow) });
+
+                    // Retrograde exhaust streaks (plume fires in –e2 direction)
+                    for (let i = 0; i < 5; i++) {
+                        const spread = 0.25;
+                        const len = 1.8 + Math.random() * 2.5;
+                        const dir = new THREE.Vector3(
+                            -e2.x + (Math.random() - 0.5) * spread,
+                            -e2.y + (Math.random() - 0.5) * spread,
+                            -e2.z + (Math.random() - 0.5) * spread
+                        ).normalize();
+                        const pGeo = new THREE.BufferGeometry().setFromPoints([burnPos.clone(), burnPos.clone().addScaledVector(dir, len)]);
+                        const pMat = new THREE.LineBasicMaterial({ color: i < 2 ? 0xffffff : 0x00e5ff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+                        const streak = new THREE.Line(pGeo, pMat);
+                        scene.add(streak);
+                        gsap.to(pMat, { opacity: 0, duration: 0.4 + Math.random() * 0.4, ease: 'power2.in', onComplete: () => scene.remove(streak) });
+                    }
+
+                    tw.t = 0; clearTrail();
+                }
             });
             // Phase 2 — TLI coast (Hohmann half-ellipse, Kepler-timed: fast near Earth, slow near Moon)
             tl.to(tw, { t: 1, duration: dur2, ease: 'none',
