@@ -609,7 +609,7 @@
         }
 
         // Launch payload into LEO — called on Earth click
-        function launchPayload(clickPoint, onDone) {
+        function launchPayload(clickPoint) {
             const hud = document.getElementById('launch-hud');
 
             const color = LAUNCH_COLORS[launchColorIndex % LAUNCH_COLORS.length];
@@ -758,7 +758,7 @@
                     document.getElementById('launch-hud-text').textContent = '▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed';
                     hud.style.opacity = '1';
                     setTimeout(() => { hud.style.opacity = '0'; }, 3000);
-                    if (onDone) onDone();
+
                 }
             });
         }
@@ -1138,11 +1138,7 @@
         }
 
         // Realistic multi-phase Mars mission: ascent → LEO → TMI coast → Mars orbit → descent
-        let marsLaunching = false;
-
         function launchToMarsRealistic() {
-            if (marsLaunching) return;
-            marsLaunching = true;
 
             const color    = 0xff6b35;
             const marsPos  = mars.position.clone();
@@ -1298,7 +1294,7 @@
 
             // ── GSAP Timeline ─────────────────────────────────────────────────────
             const tw = { t: 0 };
-            const tl = gsap.timeline({ onComplete: () => { marsLaunching = false; } });
+            const tl = gsap.timeline();
 
             tl.to(tw, { t: 1, duration: dur0, ease: 'none',
                 onUpdate:   () => tick(c0.getPoint(tw.t)),
@@ -1330,24 +1326,20 @@
         // Click Earth to launch
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
-        let launching = false;
-
         document.getElementById('canvas-container').addEventListener('click', (e) => {
-            if (launching) return;
             mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
             const earthHits = raycaster.intersectObject(earth);
             if (earth && earthHits.length > 0) {
-                launching = true;
-                launchPayload(earthHits[0].point, () => { launching = false; });
+                launchPayload(earthHits[0].point, () => {});
             } else if (moon && raycaster.intersectObject(moon).length > 0) {
                 const hud = document.getElementById('launch-hud');
                 document.getElementById('launch-hud-text').textContent = '▲ TLI BURN INITIATED — LUNA_TRANSIT_01 // Moon intercept plotted';
                 hud.style.opacity = '1';
                 setTimeout(() => { hud.style.opacity = '0'; }, 4000);
                 launchToMoonRealistic();
-            } else if (mars && raycaster.intersectObject(mars).length > 0 && !marsLaunching) {
+            } else if (mars && raycaster.intersectObject(mars).length > 0) {
                 const hud = document.getElementById('mars-hud');
                 document.getElementById('mars-hud-text').textContent = '▲ TMI BURN INITIATED — MARS_TRANSIT_01 // Interplanetary trajectory locked';
                 hud.style.opacity = '1';
