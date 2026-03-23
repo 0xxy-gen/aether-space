@@ -899,11 +899,8 @@
         }
 
         // Realistic multi-phase Moon mission: ascent → spiral → lunar orbit → powered descent
-        let moonLaunching = false;
 
         function launchToMoonRealistic() {
-            if (moonLaunching) return;
-            moonLaunching = true;
 
             const color    = 0x00e5ff;
             const moonPos  = moon.position.clone();
@@ -1106,7 +1103,7 @@
 
             // ── GSAP Timeline ─────────────────────────────────────────────────────
             const tw = { t: 0 };
-            const tl = gsap.timeline({ onComplete: () => { moonLaunching = false; } });
+            const tl = gsap.timeline();
 
             // Phase 0 — ascent to LEO (Hohmann arc, Kepler-timed)
             tl.to(tw, { t: 1, duration: dur0, ease: 'none',
