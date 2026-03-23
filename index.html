@@ -55,12 +55,8 @@
     <div id="canvas-container"></div>
 
     <!-- Launch HUD — near bottom click hint -->
-    <div id="launch-hud" class="fixed opacity-0 transition-opacity duration-500 pointer-events-none" style="z-index:20; bottom:68px; left:50%; transform:translateX(-50%); white-space:nowrap;">
-        <p id="launch-hud-text" class="mono text-[11px] text-cyan-400 tracking-[0.4em] uppercase text-center"></p>
-    </div>
-    <!-- Mars HUD — near bottom click hint -->
-    <div id="mars-hud" class="fixed opacity-0 transition-opacity duration-500 pointer-events-none" style="z-index:20; bottom:68px; left:50%; transform:translateX(-50%); white-space:nowrap;">
-        <p id="mars-hud-text" class="mono text-[11px] tracking-[0.4em] uppercase text-center" style="color:#ff6b35;"></p>
+    <div id="mission-hud" class="fixed opacity-0 transition-opacity duration-500 pointer-events-none" style="z-index:20; bottom:68px; left:50%; transform:translateX(-50%); white-space:nowrap;">
+        <p id="mission-hud-text" class="mono text-[11px] tracking-[0.4em] uppercase text-center"></p>
     </div>
 
     <!-- Click hint — fixed center-bottom -->
@@ -610,8 +606,6 @@
 
         // Launch payload into LEO — called on Earth click
         function launchPayload(clickPoint) {
-            const hud = document.getElementById('launch-hud');
-
             const color = LAUNCH_COLORS[launchColorIndex % LAUNCH_COLORS.length];
             launchColorIndex++;
 
@@ -786,9 +780,7 @@
                         gsap.to(pMat, { opacity: 0, duration: 0.4 + Math.random() * 0.4, ease: 'power2.in', onComplete: () => scene.remove(streak) });
                     }
 
-                    document.getElementById('launch-hud-text').textContent = '▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed';
-                    hud.style.opacity = '1';
-                    setTimeout(() => { hud.style.opacity = '0'; }, 3000);
+                    showHud('▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed', '#00e5ff', 3000);
 
                 }
             });
@@ -1354,6 +1346,18 @@
             });
         }
 
+        // Single HUD helper — replaces any active message immediately
+        let hudTimeout = null;
+        function showHud(text, color, duration) {
+            const hud  = document.getElementById('mission-hud');
+            const txt  = document.getElementById('mission-hud-text');
+            if (hudTimeout) { clearTimeout(hudTimeout); hudTimeout = null; }
+            txt.style.color = color;
+            txt.textContent = text;
+            hud.style.opacity = '1';
+            hudTimeout = setTimeout(() => { hud.style.opacity = '0'; hudTimeout = null; }, duration);
+        }
+
         // Click Earth to launch
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -1365,16 +1369,10 @@
             if (earth && earthHits.length > 0) {
                 launchPayload(earthHits[0].point, () => {});
             } else if (moon && raycaster.intersectObject(moon).length > 0) {
-                const hud = document.getElementById('launch-hud');
-                document.getElementById('launch-hud-text').textContent = '▲ TLI BURN INITIATED — LUNA_TRANSIT_01 // Moon intercept plotted';
-                hud.style.opacity = '1';
-                setTimeout(() => { hud.style.opacity = '0'; }, 4000);
+                showHud('▲ TLI BURN INITIATED — LUNA_TRANSIT_01 // Moon intercept plotted', '#00e5ff', 4000);
                 launchToMoonRealistic();
             } else if (mars && raycaster.intersectObject(mars).length > 0) {
-                const hud = document.getElementById('mars-hud');
-                document.getElementById('mars-hud-text').textContent = '▲ TMI BURN INITIATED — MARS_TRANSIT_01 // Interplanetary trajectory locked';
-                hud.style.opacity = '1';
-                setTimeout(() => { hud.style.opacity = '0'; }, 5000);
+                showHud('▲ TMI BURN INITIATED — MARS_TRANSIT_01 // Interplanetary trajectory locked', '#ff6b35', 5000);
                 launchToMarsRealistic();
             }
         });
