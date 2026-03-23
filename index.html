@@ -34,6 +34,11 @@
         #page2, #page3 { opacity: 0; transition: opacity 0.6s ease; }
         #page2.visible, #page3.visible { opacity: 1; }
 
+        /* Click hint */
+        #click-hint { position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; white-space: nowrap; }
+        @keyframes hintPulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+        #click-hint { animation: hintPulse 2.8s ease-in-out infinite; }
+
         .stat-card {
             border-top: 1px solid rgba(255,255,255,0.08);
             padding-top: 24px;
@@ -48,6 +53,11 @@
     </div>
 
     <div id="canvas-container"></div>
+
+    <!-- Click hint — fixed center-bottom -->
+    <div id="click-hint">
+        <p class="mono text-[10px] text-white/60 tracking-[0.4em] uppercase">Click Earth · Moon · Mars to launch</p>
+    </div>
 
     <!-- Navigation -->
     <nav class="ui-layer fixed top-0 w-full p-8 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
@@ -73,9 +83,9 @@
             <div class="max-w-xl">
                 <div class="hud-line"></div>
                 <h1 class="text-5xl md:text-6xl lg:text-7xl tracking-tighter mb-8 leading-[1.0]">
-                    <span class="font-light text-white/40">The</span> <span class="font-light text-white/40">Operating</span><br/>
-                    <span class="font-bold">SYSTEM</span> <span class="font-light text-white/30">for</span><br/>
-                    <span class="font-bold italic">Orbital</span> <span class="font-light text-white/15">Logistics.</span>
+                    <span class="font-light text-white/40">The</span> <span class="font-bold">Operating</span><br/>
+                    <span class="font-bold">System</span> <span class="font-light text-white/30">for</span><br/>
+                    <span class="font-bold italic">Orbital</span> <span class="font-bold italic text-white/60">Logistics.</span>
                 </h1>
                 <p class="text-sm text-white/40 max-w-sm mb-8 font-light leading-relaxed border-l border-cyan-500/20 pl-6">
                     Automated mission planning, launch allocation, and manifest optimisation that turns fragmented procurement into coordinated, high-utilisation missions across Earth, Moon, and Mars.
@@ -90,7 +100,6 @@
                 <div id="launch-hud" class="mt-6 opacity-0 transition-opacity duration-500 pointer-events-none">
                     <p id="launch-hud-text" class="mono text-[9px] text-cyan-400 tracking-widest uppercase">▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed</p>
                 </div>
-                <p class="mono text-[8px] text-white/20 tracking-widest uppercase mt-4">Click Earth to launch · Click Moon to transit · Click Mars to transfer</p>
                 <!-- Mars HUD notification -->
                 <div id="mars-hud" class="mt-2 opacity-0 transition-opacity duration-500 pointer-events-none">
                     <p id="mars-hud-text" class="mono text-[9px] tracking-widest uppercase" style="color: #ff6b35;">▲ TMI BURN INITIATED — MARS_TRANSIT_01 // Interplanetary trajectory locked</p>
