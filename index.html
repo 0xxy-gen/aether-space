@@ -386,9 +386,9 @@
 
             // 4. ORBITAL ROCKETS (circling Earth)
             createOrbitalRocket(13.5, Math.PI * 0.18,  0.0,  0x00e5ff, 0.0022); // equatorial-ish, cyan
-            createOrbitalRocket(16,   Math.PI * 0.42,  0.33, 0xffffff, 0.0017); // inclined, white
+            createOrbitalRocket(16,   Math.PI * 0.42,  0.33, 0x00e5ff, 0.0017); // inclined, blue
             createOrbitalRocket(13.5, Math.PI * -0.28, 0.67, 0x00e5ff, 0.0022); // retrograde incline
-            createOrbitalRocket(19,   Math.PI * 0.72,  0.15, 0xffffff, 0.0013); // high polar, white
+            createOrbitalRocket(19,   Math.PI * 0.72,  0.15, 0x00e5ff, 0.0013); // high polar, blue
 
             // 5. KINETIC TRANSIT ROCKETS (point-to-point)
         }
@@ -434,12 +434,12 @@
             scene.add(new THREE.Line(pathGeo, pathMat));
 
             // Rocket body
-            const rGeo = new THREE.SphereGeometry(0.35, 8, 8);
+            const rGeo = new THREE.SphereGeometry(0.12, 8, 8);
             const rMat = new THREE.MeshBasicMaterial({ color: color });
             const rMesh = new THREE.Mesh(rGeo, rMat);
 
             // Engine plume
-            const pGeo = new THREE.SphereGeometry(0.7, 8, 8);
+            const pGeo = new THREE.SphereGeometry(0.28, 8, 8);
             const pMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.25 });
             rMesh.add(new THREE.Mesh(pGeo, pMat));
 
@@ -675,12 +675,12 @@
             scene.add(new THREE.Line(ringGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.08 })));
 
             // Rocket — visible during flight
-            const rGeo = new THREE.SphereGeometry(0.12, 8, 8);
+            const rGeo = new THREE.SphereGeometry(0.07, 8, 8);
             const rMat = new THREE.MeshBasicMaterial({ color });
             const rocket = new THREE.Mesh(rGeo, rMat);
 
             // Halo (removed on arrival)
-            const hGeo = new THREE.SphereGeometry(0.35, 8, 8);
+            const hGeo = new THREE.SphereGeometry(0.2, 8, 8);
             const hMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4 });
             rocket.add(new THREE.Mesh(hGeo, hMat));
 
