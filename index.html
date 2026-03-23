@@ -867,24 +867,24 @@
         }
 
         // Delta-V burst visual: hot-core flash + glow ring + exhaust streaks
-        function dvBurst(pos, color, plumeDir) {
+        function dvBurst(pos, color, plumeDir, scale = 1) {
             const fMat = new THREE.MeshBasicMaterial({ color: 0xffddaa, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false });
             const flash = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), fMat);
             flash.position.copy(pos);
             scene.add(flash);
-            gsap.to(flash.scale, { x: 2.5, y: 2.5, z: 2.5, duration: 0.35, ease: 'power2.out' });
+            gsap.to(flash.scale, { x: 2.5 * scale, y: 2.5 * scale, z: 2.5 * scale, duration: 0.35, ease: 'power2.out' });
             gsap.to(fMat, { opacity: 0, duration: 0.35, ease: 'power2.in', onComplete: () => scene.remove(flash) });
 
             const gMat = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
             const glow = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), gMat);
             glow.position.copy(pos);
             scene.add(glow);
-            gsap.to(glow.scale, { x: 3, y: 3, z: 3, duration: 0.9, ease: 'power1.out' });
+            gsap.to(glow.scale, { x: 3 * scale, y: 3 * scale, z: 3 * scale, duration: 0.9, ease: 'power1.out' });
             gsap.to(gMat, { opacity: 0, duration: 0.9, ease: 'power2.in', onComplete: () => scene.remove(glow) });
 
             for (let i = 0; i < 5; i++) {
                 const spread = 0.25;
-                const len = 1.2 + Math.random() * 1.5;
+                const len = (1.2 + Math.random() * 1.5) * scale;
                 const dir = new THREE.Vector3(
                     plumeDir.x + (Math.random() - 0.5) * spread,
                     plumeDir.y + (Math.random() - 0.5) * spread,
@@ -1056,6 +1056,7 @@
             const loPreview  = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c3.getPoints(80)), faintMat.clone());
             scene.add(tliPreview);
             scene.add(loPreview);
+            dvBurst(c0.getPoint(0), color, e1.clone().negate(), 0.45);
 
             // ── Rocket mesh + glow halo ───────────────────────────────────────────
             const rocket = new THREE.Mesh(
@@ -1250,6 +1251,7 @@
             const moPreview  = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c3.getPoints(80)), faintMat.clone());
             scene.add(tmiPreview);
             scene.add(moPreview);
+            dvBurst(c0.getPoint(0), color, e1.clone().negate(), 0.45);
 
             // ── Rocket mesh + glow halo ───────────────────────────────────────────
             const rocket = new THREE.Mesh(
