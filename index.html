@@ -863,90 +863,159 @@
             if (moonLaunching) return;
             moonLaunching = true;
 
-            const color = 0x00e5ff;
-            const moonPos = moon.position;
-            const moonDist = moonPos.length();
+            const color    = 0x00e5ff;
+            const moonPos  = moon.position.clone();
+            const moonDist = moonPos.length();   // ≈ 64.2
 
-            // Orbital plane aligned with Earth–Moon axis
-            const e1 = moonPos.clone().normalize();
+            // ── Gravitational parameters (scene units) ────────────────────────────
+            // MU_E derived from arcDuration = π·a^1.5/√μ, where √μ = 41.67
+            const MU_E = 41.67 * 41.67;          // ≈ 1736  Earth μ
+            const MU_M = MU_E / 81.3;            // ≈ 21.4  Moon μ  (real mass ratio 1:81.3)
+
+            // ── Orbital radii ─────────────────────────────────────────────────────
+            const R_SURF = 12;    // Earth surface
+            const R_LEO  = 14.5;  // LEO parking orbit
+            const R_LO   = 4.5;   // Lunar parking orbit radius (from Moon center)
+            const R_MOON = 3.0;   // Moon surface
+
+            // ── Vis-viva: v² = μ(2/r − 1/a) ──────────────────────────────────────
+            const vVis  = (mu, r, a) => Math.sqrt(mu * (2/r - 1/a));
+            const vCirc = (mu, r)    => Math.sqrt(mu / r);
+
+            // ── Kepler period/half-period: T = 2π·a^1.5/√μ ───────────────────────
+            const Thalf = (a, mu) => Math.PI       * Math.pow(a, 1.5) / Math.sqrt(mu);
+            const Tfull = (a, mu) => 2 * Math.PI   * Math.pow(a, 1.5) / Math.sqrt(mu);
+
+            // ── Orbital plane: aligned with Earth–Moon axis ───────────────────────
+            const e1    = moonPos.clone().normalize();
             const tempV = Math.abs(e1.y) > 0.99 ? new THREE.Vector3(1,0,0) : new THREE.Vector3(0,1,0);
-            const e2 = new THREE.Vector3().crossVectors(e1, tempV).normalize();
+            const e2    = new THREE.Vector3().crossVectors(e1, tempV).normalize();
 
-            const R_SURF = 12, R_LEO = 14.5, R_LO = 4.5, R_MOON = 3, N_SPIRAL = 5;
-
-            // ── Phase 1: Hohmann launch arc (surface → LEO) ──────────────────────
-            // Periapsis at -e1 (anti-Moon side), apoapsis at +e1 (Moon-facing LEO)
-            const a1  = (R_SURF + R_LEO) / 2;
-            const ec1 = (R_LEO - R_SURF) / (R_LEO + R_SURF);
-            const arc1Pts = [];
-            for (let k = 0; k <= 32; k++) {
-                const M  = (k / 32) * Math.PI;
-                const E  = solveKepler(M, ec1);
-                const th = 2 * Math.atan2(Math.sqrt(1+ec1)*Math.sin(E/2), Math.sqrt(1-ec1)*Math.cos(E/2));
-                const r  = a1 * (1 - ec1*ec1) / (1 + ec1*Math.cos(th));
-                arc1Pts.push(new THREE.Vector3(
-                    -e1.x*r*Math.cos(th) + e2.x*r*Math.sin(th),
-                    -e1.y*r*Math.cos(th) + e2.y*r*Math.sin(th),
-                    -e1.z*r*Math.cos(th) + e2.z*r*Math.sin(th)
-                ));
+            // Helper: build a Kepler arc (θ: 0→π, i.e. peri→apo) in the e1/e2 plane
+            // e_r = periapsis direction, nPts = number of points
+            function keplerArc(a, ecc, e_r, e_t, nPts, origin) {
+                const pts = [];
+                const ox = origin ? origin.x : 0, oy = origin ? origin.y : 0, oz = origin ? origin.z : 0;
+                for (let k = 0; k <= nPts; k++) {
+                    const M  = (k / nPts) * Math.PI;
+                    const E  = solveKepler(M, ecc);
+                    const th = 2 * Math.atan2(Math.sqrt(1+ecc)*Math.sin(E/2), Math.sqrt(1-ecc)*Math.cos(E/2));
+                    const r  = a * (1 - ecc*ecc) / (1 + ecc*Math.cos(th));
+                    pts.push(new THREE.Vector3(
+                        ox + e_r.x*r*Math.cos(th) + e_t.x*r*Math.sin(th),
+                        oy + e_r.y*r*Math.cos(th) + e_t.y*r*Math.sin(th),
+                        oz + e_r.z*r*Math.cos(th) + e_t.z*r*Math.sin(th)
+                    ));
+                }
+                return new THREE.CatmullRomCurve3(pts, false);
             }
-            const arc1 = new THREE.CatmullRomCurve3(arc1Pts, false);
-            // arc1[0] = -e1·R_SURF  (anti-Moon surface)
-            // arc1[N] = +e1·R_LEO   (Moon-facing LEO) ✓
 
-            // ── Phase 2: Low-thrust outward spiral (LEO → lunar orbit altitude) ──
-            // Starts at +e1·R_LEO, N_SPIRAL full revolutions, ends at +e1·R_SPIRAL_END
-            const R_SPIRAL_END = moonDist - R_LO;  // Earth-facing lunar orbit entry
-            const spiralPts = [];
-            for (let k = 0; k <= 500; k++) {
-                const t     = k / 500;
-                const angle = t * N_SPIRAL * Math.PI * 2;
-                const r     = R_LEO + (R_SPIRAL_END - R_LEO) * t;
-                spiralPts.push(new THREE.Vector3(
-                    e1.x*r*Math.cos(angle) + e2.x*r*Math.sin(angle),
-                    e1.y*r*Math.cos(angle) + e2.y*r*Math.sin(angle),
-                    e1.z*r*Math.cos(angle) + e2.z*r*Math.sin(angle)
-                ));
-            }
-            const spiralCurve = new THREE.CatmullRomCurve3(spiralPts, false);
+            // ═══════════════════════════════════════════════════════════════════════
+            //  PHASE 0 — Ascent arc  (Earth surface → LEO, Hohmann)
+            //  e_r = –e1 (periapsis on anti-Moon side), apoapsis at +e1·R_LEO
+            //  Duration = Kepler half-period of transfer ellipse
+            // ═══════════════════════════════════════════════════════════════════════
+            const a0  = (R_SURF + R_LEO) / 2;
+            const ec0 = (R_LEO - R_SURF) / (R_LEO + R_SURF);
+            const c0  = keplerArc(a0, ec0, e1.clone().negate(), e2, 32, null);
+            const dur0 = Thalf(a0, MU_E);
+            // c0[0] = –e1·R_SURF  (launch, anti-Moon side)
+            // c0[N] = +e1·R_LEO   (Moon-facing LEO insertion) ✓
 
-            // ── Phase 3: Circular lunar orbit ────────────────────────────────────
-            const N_LO_REVS = 2;
-            const loPts = [];
+            // ═══════════════════════════════════════════════════════════════════════
+            //  PHASE 1 — LEO parking orbit  (1.5 revolutions before TLI burn)
+            //  v_circ = √(MU_E / R_LEO)
+            //  1.5 revs so spacecraft arrives at anti-Moon side of LEO for TLI ✓
+            // ═══════════════════════════════════════════════════════════════════════
+            const leoRing = [];
             for (let k = 0; k < 80; k++) {
-                const angle = (k / 80) * Math.PI * 2;
-                loPts.push(new THREE.Vector3(
-                    moonPos.x + e1.x*R_LO*Math.cos(angle) + e2.x*R_LO*Math.sin(angle),
-                    moonPos.y + e1.y*R_LO*Math.cos(angle) + e2.y*R_LO*Math.sin(angle),
-                    moonPos.z + e1.z*R_LO*Math.cos(angle) + e2.z*R_LO*Math.sin(angle)
+                const a = (k/80) * Math.PI * 2;
+                leoRing.push(new THREE.Vector3(
+                    e1.x*R_LEO*Math.cos(a) + e2.x*R_LEO*Math.sin(a),
+                    e1.y*R_LEO*Math.cos(a) + e2.y*R_LEO*Math.sin(a),
+                    e1.z*R_LEO*Math.cos(a) + e2.z*R_LEO*Math.sin(a)
                 ));
             }
-            const loCurve   = new THREE.CatmullRomCurve3(loPts, true);
-            const loInsertT = 0.5; // t=0.5 → angle=π → moonPos - e1·R_LO = R_SPIRAL_END·e1 ✓
+            const c1   = new THREE.CatmullRomCurve3(leoRing, true);
+            const dur1 = 1.5 * Tfull(R_LEO, MU_E);
+            // c1.getPoint(0)   = +e1·R_LEO  ← connects from c0[N] ✓
+            // c1.getPoint(0.5) = –e1·R_LEO  ← TLI burn site (anti-Moon after 1.5 revs) ✓
 
-            // ── Phase 4: Powered descent spiral (lunar orbit → surface) ───────────
-            const N_DESC = 2;
-            const descPts = [];
-            for (let k = 0; k <= 120; k++) {
-                const t     = k / 120;
-                const angle = Math.PI + t * N_DESC * Math.PI * 2;  // start at entry point (π)
-                const r     = R_LO + (R_MOON - R_LO) * t;
-                descPts.push(new THREE.Vector3(
-                    moonPos.x + e1.x*r*Math.cos(angle) + e2.x*r*Math.sin(angle),
-                    moonPos.y + e1.y*r*Math.cos(angle) + e2.y*r*Math.sin(angle),
-                    moonPos.z + e1.z*r*Math.cos(angle) + e2.z*r*Math.sin(angle)
+            // ═══════════════════════════════════════════════════════════════════════
+            //  PHASE 2 — Trans-Lunar Injection (TLI) coast arc  (LEO → lunar approach)
+            //  Hohmann: periapsis = R_LEO, apoapsis = moonDist – R_LO
+            //  Δv_TLI = v_tli_peri – v_leo_circ   (prograde burn at periapsis)
+            //  Duration = Kepler half-period of transfer ellipse
+            // ═══════════════════════════════════════════════════════════════════════
+            const r_apo     = moonDist - R_LO;
+            const a2        = (R_LEO + r_apo) / 2;
+            const ec2       = (r_apo - R_LEO) / (r_apo + R_LEO);
+            const c2        = keplerArc(a2, ec2, e1.clone().negate(), e2, 64, null);
+            const dur2      = Thalf(a2, MU_E);
+            // Δv_TLI (for reference, not animated):
+            // vVis(MU_E, R_LEO, a2) – vCirc(MU_E, R_LEO)
+            // c2[0] = –e1·R_LEO  (TLI periapsis, anti-Moon LEO) ← connects from c1.getPoint(0.5) ✓
+            // c2[N] = +e1·r_apo  (Earth-facing lunar orbit altitude) ✓
+
+            // ═══════════════════════════════════════════════════════════════════════
+            //  PHASE 3 — Lunar parking orbit  (1.5 revolutions before DOI)
+            //  LOI Δv = v_tli_apo – v_lo_circ   (retrograde burn to capture into orbit)
+            //  v_lo_circ = √(MU_M / R_LO)   — circular speed around Moon
+            //  Duration = 1.5 × Kepler period of lunar orbit
+            //  1.5 revs → arrives at anti-Earth side of Moon (far side) for DOI ✓
+            // ═══════════════════════════════════════════════════════════════════════
+            const loRing = [];
+            for (let k = 0; k < 80; k++) {
+                const a = (k/80) * Math.PI * 2;
+                loRing.push(new THREE.Vector3(
+                    moonPos.x + e1.x*R_LO*Math.cos(a) + e2.x*R_LO*Math.sin(a),
+                    moonPos.y + e1.y*R_LO*Math.cos(a) + e2.y*R_LO*Math.sin(a),
+                    moonPos.z + e1.z*R_LO*Math.cos(a) + e2.z*R_LO*Math.sin(a)
                 ));
             }
-            const descCurve = new THREE.CatmullRomCurve3(descPts, false);
+            const c3        = new THREE.CatmullRomCurve3(loRing, true);
+            const dur3      = 1.5 * Tfull(R_LO, MU_M);
+            const loInsertT = 0.5;  // t=0.5 → angle=π → moonPos – e1·R_LO = +e1·r_apo ✓
+            // After 1.5 revs from loInsertT=0.5: t = 2.0 → 2.0%1 = 0 → moonPos + e1·R_LO  (far side) ✓
 
-            // ── Faint trajectory preview lines ────────────────────────────────────
-            const faintMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.06 });
-            const spiralPreview = new THREE.Line(new THREE.BufferGeometry().setFromPoints(spiralCurve.getPoints(400)), faintMat);
-            const loPreview     = new THREE.Line(new THREE.BufferGeometry().setFromPoints(loCurve.getPoints(80)),      faintMat.clone());
-            scene.add(spiralPreview);
+            // ═══════════════════════════════════════════════════════════════════════
+            //  PHASE 4 — Powered descent arc  (lunar orbit → Moon surface, Hohmann)
+            //  DOI Δv: small retrograde burn on far side lowers periapsis to Moon surface
+            //  Hohmann: apoapsis = R_LO (far side), periapsis = R_MOON (near / Earth-facing side)
+            //  e_r_desc = –e1  (periapsis toward Earth from Moon = near side)
+            //  Arc sampled θ: π→0 (apo→peri) so spacecraft falls toward Moon surface
+            //  Duration = Kepler half-period of descent ellipse under Moon's gravity
+            // ═══════════════════════════════════════════════════════════════════════
+            const a4   = (R_LO + R_MOON) / 2;
+            const ec4  = (R_LO - R_MOON) / (R_LO + R_MOON);
+            const dur4 = Thalf(a4, MU_M);
+            // Build arc apo→peri by reversing the normal peri→apo Kepler sequence
+            // e_r = –e1: θ=0 (peri) → moonPos – e1·R_MOON (near side surface) ✓
+            //            θ=π (apo)  → moonPos + e1·R_LO   (far side)          ✓
+            const d4pts = [];
+            for (let k = 64; k >= 0; k--) {   // reversed: θ from π down to 0
+                const M  = (k/64) * Math.PI;
+                const E  = solveKepler(M, ec4);
+                const th = 2 * Math.atan2(Math.sqrt(1+ec4)*Math.sin(E/2), Math.sqrt(1-ec4)*Math.cos(E/2));
+                const r  = a4 * (1 - ec4*ec4) / (1 + ec4*Math.cos(th));
+                d4pts.push(new THREE.Vector3(
+                    moonPos.x + (-e1.x)*r*Math.cos(th) + e2.x*r*Math.sin(th),
+                    moonPos.y + (-e1.y)*r*Math.cos(th) + e2.y*r*Math.sin(th),
+                    moonPos.z + (-e1.z)*r*Math.cos(th) + e2.z*r*Math.sin(th)
+                ));
+            }
+            const c4 = new THREE.CatmullRomCurve3(d4pts, false);
+            // c4[0]  = θ=π: moonPos + e1·R_LO    (far side) ← connects from c3.getPoint(0) ✓
+            // c4[N]  = θ=0: moonPos – e1·R_MOON  (near-side surface landing) ✓
+
+            // ── Faint trajectory preview (TLI arc + lunar orbit ring) ─────────────
+            const faintMat  = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.06 });
+            const tliPreview = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c2.getPoints(64)), faintMat);
+            const loPreview  = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c3.getPoints(80)), faintMat.clone());
+            scene.add(tliPreview);
             scene.add(loPreview);
 
-            // ── Rocket mesh ───────────────────────────────────────────────────────
+            // ── Rocket mesh + glow halo ───────────────────────────────────────────
             const rocket = new THREE.Mesh(
                 new THREE.SphereGeometry(0.3, 8, 8),
                 new THREE.MeshBasicMaterial({ color })
@@ -955,10 +1024,10 @@
                 new THREE.SphereGeometry(0.65, 8, 8),
                 new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35 })
             ));
-            rocket.position.copy(arc1.getPoint(0));
+            rocket.position.copy(c0.getPoint(0));
             scene.add(rocket);
 
-            // ── Dual-pass additive trail ──────────────────────────────────────────
+            // ── Dual-pass additive glow trail ─────────────────────────────────────
             const TRAIL_MAX = 100;
             const history   = [];
             function mkBuf() {
@@ -967,53 +1036,58 @@
                 geo.setDrawRange(0, 0);
                 return geo;
             }
-            const trailGeo  = mkBuf(), glowGeo = mkBuf();
-            const trailLine = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 1.0,  blending: THREE.AdditiveBlending, depthWrite: false }));
-            const glowLine  = new THREE.Line(glowGeo,  new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
-            scene.add(trailLine);
-            scene.add(glowLine);
+            const tGeo  = mkBuf(), gGeo = mkBuf();
+            const tLine = new THREE.Line(tGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 1.0,  blending: THREE.AdditiveBlending, depthWrite: false }));
+            const gLine = new THREE.Line(gGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
+            scene.add(tLine);
+            scene.add(gLine);
 
             function tick(pos) {
                 rocket.position.copy(pos);
                 history.unshift(pos.clone());
                 if (history.length > TRAIL_MAX) history.pop();
-                const a = trailGeo.attributes.position.array, g = glowGeo.attributes.position.array;
+                const a = tGeo.attributes.position.array, g = gGeo.attributes.position.array;
                 for (let i = 0; i < history.length; i++) {
                     a[i*3]=g[i*3]=history[i].x; a[i*3+1]=g[i*3+1]=history[i].y; a[i*3+2]=g[i*3+2]=history[i].z;
                 }
-                trailGeo.attributes.position.needsUpdate = true;
-                glowGeo.attributes.position.needsUpdate  = true;
-                trailGeo.setDrawRange(0, history.length);
-                glowGeo.setDrawRange(0, history.length);
+                tGeo.attributes.position.needsUpdate = true;
+                gGeo.attributes.position.needsUpdate = true;
+                tGeo.setDrawRange(0, history.length);
+                gGeo.setDrawRange(0, history.length);
             }
             function clearTrail() { history.length = 0; }
             function cleanup() {
-                scene.remove(trailLine); scene.remove(glowLine);
-                scene.remove(spiralPreview); scene.remove(loPreview);
+                scene.remove(tLine); scene.remove(gLine);
+                scene.remove(tliPreview); scene.remove(loPreview);
             }
 
             // ── GSAP Timeline ─────────────────────────────────────────────────────
             const tw = { t: 0 };
             const tl = gsap.timeline({ onComplete: () => { moonLaunching = false; } });
 
-            // Phase 1 — ascent to LEO (3s)
-            tl.to(tw, { t: 1, duration: 3, ease: 'power1.out',
-                onUpdate:   () => tick(arc1.getPoint(tw.t)),
+            // Phase 0 — ascent to LEO (Hohmann arc, Kepler-timed)
+            tl.to(tw, { t: 1, duration: dur0, ease: 'none',
+                onUpdate:   () => tick(c0.getPoint(tw.t)),
                 onComplete: () => { tw.t = 0; clearTrail(); }
             });
-            // Phase 2 — low-thrust outward spiral (20s, 5 revolutions)
-            tl.to(tw, { t: 1, duration: 20, ease: 'none',
-                onUpdate:   () => tick(spiralCurve.getPoint(tw.t)),
+            // Phase 1 — LEO parking orbit (1.5 revolutions, circular speed)
+            tl.to(tw, { t: 1.5, duration: dur1, ease: 'none',
+                onUpdate:   () => tick(c1.getPoint(tw.t % 1)),
+                onComplete: () => { tw.t = 0; clearTrail(); }
+            });
+            // Phase 2 — TLI coast (Hohmann half-ellipse, Kepler-timed: fast near Earth, slow near Moon)
+            tl.to(tw, { t: 1, duration: dur2, ease: 'none',
+                onUpdate:   () => tick(c2.getPoint(tw.t)),
                 onComplete: () => { tw.t = loInsertT; clearTrail(); }
             });
-            // Phase 3 — circular lunar orbit (6s, 2 revolutions)
-            tl.to(tw, { t: loInsertT + N_LO_REVS, duration: 6, ease: 'none',
-                onUpdate:   () => tick(loCurve.getPoint(tw.t % 1)),
+            // Phase 3 — Lunar parking orbit (1.5 revolutions, Moon's μ-derived period)
+            tl.to(tw, { t: loInsertT + 1.5, duration: dur3, ease: 'none',
+                onUpdate:   () => tick(c3.getPoint(tw.t % 1)),
                 onComplete: () => { tw.t = 0; clearTrail(); }
             });
-            // Phase 4 — powered descent to surface (5s)
-            tl.to(tw, { t: 1, duration: 5, ease: 'power1.in',
-                onUpdate:   () => tick(descCurve.getPoint(tw.t)),
+            // Phase 4 — Powered descent (Hohmann arc under Moon gravity, apo→peri, Kepler-timed)
+            tl.to(tw, { t: 1, duration: dur4, ease: 'none',
+                onUpdate:   () => tick(c4.getPoint(tw.t)),
                 onComplete: () => {
                     cleanup();
                     gsap.to(rocket.scale, { x:0, y:0, z:0, duration: 0.8, ease: 'power2.in',
