@@ -385,11 +385,6 @@
             createOrbitalRocket(19,   Math.PI * 0.72,  0.15, 0xffffff, 0.0013); // high polar, white
 
             // 5. KINETIC TRANSIT ROCKETS (point-to-point)
-            // Earth -> Mars
-            createRocket(new THREE.Vector3(0,0,0), mars.position, 0xffaa00, 0.0015);
-            createRocket(new THREE.Vector3(0,0,0), mars.position, 0x00e5ff, 0.001);
-            // Mars -> Earth (Return)
-            createRocket(mars.position, new THREE.Vector3(0,0,0), 0xffffff, 0.0012);
         }
 
         function createSatelliteShell(radius, count, color, speed) {
