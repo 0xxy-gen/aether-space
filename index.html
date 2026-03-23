@@ -54,6 +54,15 @@
 
     <div id="canvas-container"></div>
 
+    <!-- Launch HUD — fixed center -->
+    <div id="launch-hud" class="fixed inset-0 flex items-center justify-center opacity-0 transition-opacity duration-500 pointer-events-none" style="z-index:20;">
+        <p id="launch-hud-text" class="mono text-[11px] text-cyan-400 tracking-[0.4em] uppercase text-center"></p>
+    </div>
+    <!-- Mars HUD — fixed center -->
+    <div id="mars-hud" class="fixed inset-0 flex items-center justify-center opacity-0 transition-opacity duration-500 pointer-events-none" style="z-index:20;">
+        <p id="mars-hud-text" class="mono text-[11px] tracking-[0.4em] uppercase text-center" style="color:#ff6b35;"></p>
+    </div>
+
     <!-- Click hint — fixed center-bottom -->
     <div id="click-hint">
         <p class="mono text-[10px] text-white/60 tracking-[0.4em] uppercase">Click Earth · Moon · Mars to launch</p>
@@ -96,14 +105,6 @@
                     </button>
                 </div>
                 <p class="text-white/30 text-[10px] font-light tracking-wide mb-8">Built by operators from PLD Space, Rocket Lab &amp; UCL ML PhD &nbsp;•&nbsp; 7+ LOIs signed</p>
-                <!-- Launch HUD notification -->
-                <div id="launch-hud" class="mt-6 opacity-0 transition-opacity duration-500 pointer-events-none">
-                    <p id="launch-hud-text" class="mono text-[9px] text-cyan-400 tracking-widest uppercase">▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed</p>
-                </div>
-                <!-- Mars HUD notification -->
-                <div id="mars-hud" class="mt-2 opacity-0 transition-opacity duration-500 pointer-events-none">
-                    <p id="mars-hud-text" class="mono text-[9px] tracking-widest uppercase" style="color: #ff6b35;">▲ TMI BURN INITIATED — MARS_TRANSIT_01 // Interplanetary trajectory locked</p>
-                </div>
             </div>
         </section>
 
@@ -760,7 +761,7 @@
                     // Hand off to rocketSystem — orbits permanently
                     rocketSystem.push({ mesh: rocket, curve: destCurve, t: insertT, speed: orbitSpeed });
 
-                    hud.querySelector('p').textContent = '▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed';
+                    document.getElementById('launch-hud-text').textContent = '▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed';
                     hud.style.opacity = '1';
                     setTimeout(() => { hud.style.opacity = '0'; }, 3000);
                     if (onDone) onDone();
