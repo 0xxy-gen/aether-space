@@ -687,6 +687,30 @@
             rocket.position.copy(launchCurve.getPoint(0));
             scene.add(rocket);
 
+            // ── Launch ignition burst ─────────────────────────────────────
+            const ignitPos = rocket.position.clone();
+            const igFMat = new THREE.MeshBasicMaterial({ color: 0xffddaa, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false });
+            const igFlash = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), igFMat);
+            igFlash.position.copy(ignitPos);
+            scene.add(igFlash);
+            gsap.to(igFlash.scale, { x: 2.5, y: 2.5, z: 2.5, duration: 0.35, ease: 'power2.out' });
+            gsap.to(igFMat, { opacity: 0, duration: 0.35, ease: 'power2.in', onComplete: () => scene.remove(igFlash) });
+            const igGMat = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+            const igGlow = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), igGMat);
+            igGlow.position.copy(ignitPos);
+            scene.add(igGlow);
+            gsap.to(igGlow.scale, { x: 3, y: 3, z: 3, duration: 0.9, ease: 'power1.out' });
+            gsap.to(igGMat, { opacity: 0, duration: 0.9, ease: 'power2.in', onComplete: () => scene.remove(igGlow) });
+            for (let i = 0; i < 5; i++) {
+                const len = 1.2 + Math.random() * 1.5;
+                const dir = new THREE.Vector3(-e_r.x + (Math.random()-0.5)*0.25, -e_r.y + (Math.random()-0.5)*0.25, -e_r.z + (Math.random()-0.5)*0.25).normalize();
+                const pGeo = new THREE.BufferGeometry().setFromPoints([ignitPos.clone(), ignitPos.clone().addScaledVector(dir, len)]);
+                const pMat = new THREE.LineBasicMaterial({ color: i < 2 ? 0xff6600 : 0xff2200, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+                const streak = new THREE.Line(pGeo, pMat);
+                scene.add(streak);
+                gsap.to(pMat, { opacity: 0, duration: 0.4 + Math.random()*0.4, ease: 'power2.in', onComplete: () => scene.remove(streak) });
+            }
+
             // Trail — additive blending makes it glow on dark space
             const TRAIL_MAX = 90;
             const trailBuf = new Float32Array(TRAIL_MAX * 3);
