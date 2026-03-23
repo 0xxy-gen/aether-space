@@ -319,9 +319,9 @@
             earth.add(new THREE.Mesh(atmosGeo, atmosMat));
 
             // Complex Satellite Shells (LEO/MEO)
-            createSatelliteShell(14.5, 200, 0x00e5ff, 0.002); // LEO
-            createSatelliteShell(17, 100, 0xffffff, -0.001);  // MEO
-            createSatelliteShell(22, 50, 0x00e5ff, 0.0005);   // GEO-ish
+            createSatelliteShell(14.5, 200, 0x00e5ff,  0.002);   // LEO — reference
+            createSatelliteShell(17,   100, 0xffffff, -0.0016);  // MEO — retrograde, Kepler-correct
+            createSatelliteShell(22,   50,  0x00e5ff, -0.0011);  // GEO — retrograde, Kepler-correct
 
             // 2. MOON
             const moonGeo = new THREE.SphereGeometry(3, 32, 32);
@@ -389,8 +389,8 @@
             mars.add(beaconGlow);
 
             // 4. ORBITAL ROCKETS (circling Earth)
-            createOrbitalRocket(13.5, Math.PI * 0.18,  0.0,  0x00e5ff, 0.0028); // equatorial-ish, cyan
-            createOrbitalRocket(16,   Math.PI * 0.42,  0.33, 0xffffff, 0.0019); // inclined, white
+            createOrbitalRocket(13.5, Math.PI * 0.18,  0.0,  0x00e5ff, 0.0022); // equatorial-ish, cyan
+            createOrbitalRocket(16,   Math.PI * 0.42,  0.33, 0xffffff, 0.0017); // inclined, white
             createOrbitalRocket(13.5, Math.PI * -0.28, 0.67, 0x00e5ff, 0.0022); // retrograde incline
             createOrbitalRocket(19,   Math.PI * 0.72,  0.15, 0xffffff, 0.0013); // high polar, white
 
@@ -408,7 +408,7 @@
         function createSatelliteShell(radius, count, color, speed) {
             const group = new THREE.Group();
             for(let i=0; i<count; i++) {
-                const satGeo = new THREE.SphereGeometry(0.08, 6, 6);
+                const satGeo = new THREE.SphereGeometry(0.07, 6, 6);
                 const satMat = new THREE.MeshBasicMaterial({ color: color });
                 const sat = new THREE.Mesh(satGeo, satMat);
 
@@ -604,6 +604,14 @@
             return new THREE.CatmullRomCurve3(pts, true);
         }
 
+        // Kepler's equation solver: M = E - e·sin(E), Newton-Raphson
+        function solveKepler(M, ecc) {
+            let E = M;
+            for (let i = 0; i < 8; i++)
+                E = E - (E - ecc * Math.sin(E) - M) / (1 - ecc * Math.cos(E));
+            return E;
+        }
+
         // Launch payload into LEO — called on Earth click
         function launchPayload(onDone) {
             const hud = document.getElementById('launch-hud');
@@ -611,57 +619,114 @@
             const color = LAUNCH_COLORS[launchColorIndex % LAUNCH_COLORS.length];
             launchColorIndex++;
 
-            // Launch from camera-facing side of Earth
-            const launchAngle = (Math.random() - 0.5) * 0.8;
+            // Launch from a random point on Earth's surface
+            const theta = Math.random() * Math.PI * 2;
+            const phi   = Math.acos(2 * Math.random() - 1);
             const surfacePoint = new THREE.Vector3(
-                Math.sin(launchAngle) * 12,
-                -1 + Math.random() * 3,
-                Math.cos(launchAngle) * 12
+                12 * Math.sin(phi) * Math.cos(theta),
+                12 * Math.cos(phi),
+                12 * Math.sin(phi) * Math.sin(theta)
             );
 
-            const inclination = (Math.random() - 0.5) * Math.PI * 0.8;
-            const destCurve   = makeOrbitCurve(new THREE.Vector3(0, 0, 0), 14.5, inclination);
-            const arcDuration = 3.2;
-            const arcMidY     = 32;
+            const orbitRadius = 14 + Math.random() * 8;   // LEO to GEO-ish (14–22)
+            // Apoapsis speed (energy-conserving): v_apo = v_circ × √(2r₀/(r₀+r₁))
+            const orbitSpeed  = 0.002 * Math.pow(14.5 / orbitRadius, 1.5)
+                                      * Math.sqrt(24 / (12 + orbitRadius));
+            // Hohmann transfer time: π·a^(3/2)/√μ, √μ=41.67 from reference orbit
+            const arcDuration = Math.PI * Math.pow((12 + orbitRadius) / 2, 1.5) / 41.67;
+
+            // ── Orbital plane ─────────────────────────────────────────────────────
+            // e_r = radial direction at launch (periapsis direction)
+            // e_t = tangential direction, randomised for orbital plane variety
+            const e_r   = surfacePoint.clone().normalize();
+            const tempV = Math.abs(e_r.y) > 0.99 ? new THREE.Vector3(1,0,0) : new THREE.Vector3(0,1,0);
+            const e_n   = new THREE.Vector3().crossVectors(e_r, tempV).normalize();
+            const e_t_base = new THREE.Vector3().crossVectors(e_n, e_r).normalize();
+            const rotAngle = Math.random() * Math.PI * 2;
+            const e_t = new THREE.Vector3()
+                .addScaledVector(e_t_base, Math.cos(rotAngle))
+                .addScaledVector(e_n,      Math.sin(rotAngle))
+                .normalize();
+
+            // ── Hohmann transfer ellipse (θ: 0 → π) ──────────────────────────────
+            // r(θ) = a(1-e²)/(1+e·cosθ) — always ≥ r₀=12, never clips Earth
+            const r0    = 12, r1 = orbitRadius;
+            const a_ell = (r0 + r1) / 2;
+            const ecc   = (r1 - r0) / (r1 + r0);
+            // Time-parameterized arc via eccentric anomaly (Kepler's 2nd law)
+            // Uniform mean anomaly M → uniform time → correct speed (fast near Earth, slow at orbit)
+            const arcPts = [];
+            for (let k = 0; k <= 64; k++) {
+                const M  = (k / 64) * Math.PI;   // mean anomaly: 0 → π (uniform in time)
+                const E  = solveKepler(M, ecc);
+                const th = 2 * Math.atan2(
+                    Math.sqrt(1 + ecc) * Math.sin(E / 2),
+                    Math.sqrt(1 - ecc) * Math.cos(E / 2)
+                );
+                const r  = a_ell * (1 - ecc * ecc) / (1 + ecc * Math.cos(th));
+                arcPts.push(new THREE.Vector3(
+                    e_r.x * r * Math.cos(th) + e_t.x * r * Math.sin(th),
+                    e_r.y * r * Math.cos(th) + e_t.y * r * Math.sin(th),
+                    e_r.z * r * Math.cos(th) + e_t.z * r * Math.sin(th)
+                ));
+            }
+            const launchCurve = new THREE.CatmullRomCurve3(arcPts, false);
+
+            // ── Circular orbit ring in the same plane ────────────────────────────
+            // Apoapsis (θ=π) lands at φ=π on the ring → insertT = 0.5 (exact match)
+            const orbitPts = [];
+            for (let k = 0; k < 80; k++) {
+                const phi = (k / 80) * Math.PI * 2;
+                orbitPts.push(new THREE.Vector3(
+                    e_r.x * r1 * Math.cos(phi) + e_t.x * r1 * Math.sin(phi),
+                    e_r.y * r1 * Math.cos(phi) + e_t.y * r1 * Math.sin(phi),
+                    e_r.z * r1 * Math.cos(phi) + e_t.z * r1 * Math.sin(phi)
+                ));
+            }
+            const destCurve = new THREE.CatmullRomCurve3(orbitPts, true);
+            const insertT   = 0.5; // φ=π = k=40/80 — apoapsis, tangents match exactly
 
             // Show faint destination ring
             const ringGeo = new THREE.BufferGeometry().setFromPoints(destCurve.getPoints(128));
             scene.add(new THREE.Line(ringGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.08 })));
 
-            // Arc terminates on the orbital path
-            const insertT  = Math.random();
-            const destPoint = destCurve.getPoint(insertT);
-
-            // Control point for the arc
-            const arcMid = new THREE.Vector3(
-                (surfacePoint.x + destPoint.x) * 0.35,
-                arcMidY,
-                (surfacePoint.z + destPoint.z) * 0.35
-            );
-            const launchCurve = new THREE.QuadraticBezierCurve3(surfacePoint, arcMid, destPoint);
-
             // Rocket — visible during flight
-            const rGeo = new THREE.SphereGeometry(0.55, 10, 10);
+            const rGeo = new THREE.SphereGeometry(0.25, 8, 8);
             const rMat = new THREE.MeshBasicMaterial({ color });
             const rocket = new THREE.Mesh(rGeo, rMat);
 
             // Halo (removed on arrival)
-            const hGeo = new THREE.SphereGeometry(1.4, 10, 10);
+            const hGeo = new THREE.SphereGeometry(0.6, 8, 8);
             const hMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4 });
             rocket.add(new THREE.Mesh(hGeo, hMat));
 
             rocket.position.copy(launchCurve.getPoint(0));
             scene.add(rocket);
 
-            // Trail
-            const TRAIL_MAX = 50;
+            // Trail — additive blending makes it glow on dark space
+            const TRAIL_MAX = 90;
             const trailBuf = new Float32Array(TRAIL_MAX * 3);
             const trailGeo = new THREE.BufferGeometry();
             trailGeo.setAttribute('position', new THREE.BufferAttribute(trailBuf, 3));
             trailGeo.setDrawRange(0, 0);
-            const trailMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.9 });
+            const trailMat = new THREE.LineBasicMaterial({
+                color, transparent: true, opacity: 1.0,
+                blending: THREE.AdditiveBlending, depthWrite: false
+            });
             const trailLine = new THREE.Line(trailGeo, trailMat);
             scene.add(trailLine);
+
+            // Soft glow trail (wider apparent size via second additive pass)
+            const glowBuf = new Float32Array(TRAIL_MAX * 3);
+            const glowGeo = new THREE.BufferGeometry();
+            glowGeo.setAttribute('position', new THREE.BufferAttribute(glowBuf, 3));
+            glowGeo.setDrawRange(0, 0);
+            const glowMat = new THREE.LineBasicMaterial({
+                color, transparent: true, opacity: 0.35,
+                blending: THREE.AdditiveBlending, depthWrite: false
+            });
+            const glowLine = new THREE.Line(glowGeo, glowMat);
+            scene.add(glowLine);
 
             const history = [];
             const tween = { t: 0 };
@@ -669,7 +734,7 @@
             gsap.to(tween, {
                 t: 1,
                 duration: arcDuration,
-                ease: 'power1.inOut',
+                ease: 'none',
                 onUpdate: () => {
                     const pos = launchCurve.getPoint(tween.t);
                     rocket.position.copy(pos);
@@ -678,22 +743,27 @@
                     if (history.length > TRAIL_MAX) history.pop();
 
                     const arr = trailGeo.attributes.position.array;
+                    const garr = glowGeo.attributes.position.array;
                     for (let i = 0; i < history.length; i++) {
-                        arr[i*3] = history[i].x; arr[i*3+1] = history[i].y; arr[i*3+2] = history[i].z;
+                        arr[i*3]  = garr[i*3]  = history[i].x;
+                        arr[i*3+1]= garr[i*3+1]= history[i].y;
+                        arr[i*3+2]= garr[i*3+2]= history[i].z;
                     }
                     trailGeo.attributes.position.needsUpdate = true;
+                    glowGeo.attributes.position.needsUpdate = true;
                     trailGeo.setDrawRange(0, history.length);
-                    trailMat.opacity = 0.9 - tween.t * 0.7;
+                    glowGeo.setDrawRange(0, history.length);
                     rocket.children[0].scale.setScalar(1 - tween.t * 0.35);
                 },
                 onComplete: () => {
                     scene.remove(trailLine);
+                    scene.remove(glowLine);
 
                     // Remove halo, keep body visible in orbit
                     rocket.remove(rocket.children[0]);
 
                     // Hand off to rocketSystem — orbits permanently
-                    rocketSystem.push({ mesh: rocket, curve: destCurve, t: insertT, speed: 0.0018 + Math.random() * 0.0008 });
+                    rocketSystem.push({ mesh: rocket, curve: destCurve, t: insertT, speed: orbitSpeed });
 
                     hud.querySelector('p').textContent = '▲ Payload inserted — LEO_SHELL_01 // Insertion confirmed';
                     hud.style.opacity = '1';
