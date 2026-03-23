@@ -938,9 +938,9 @@
             for (let k = 0; k < 80; k++) {
                 const a = (k/80) * Math.PI * 2;
                 leoRing.push(new THREE.Vector3(
-                    e1.x*R_LEO*Math.cos(a) + e2.x*R_LEO*Math.sin(a),
-                    e1.y*R_LEO*Math.cos(a) + e2.y*R_LEO*Math.sin(a),
-                    e1.z*R_LEO*Math.cos(a) + e2.z*R_LEO*Math.sin(a)
+                    e1.x*R_LEO*Math.cos(a) - e2.x*R_LEO*Math.sin(a),
+                    e1.y*R_LEO*Math.cos(a) - e2.y*R_LEO*Math.sin(a),
+                    e1.z*R_LEO*Math.cos(a) - e2.z*R_LEO*Math.sin(a)
                 ));
             }
             const c1   = new THREE.CatmullRomCurve3(leoRing, true);
