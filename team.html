@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER | Team</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .hud-line { height: 1px; background: linear-gradient(90deg, #00E5FF, transparent); width: 100px; margin-bottom: 8px; }
+
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+        }
+        .content { position: relative; z-index: 10; }
+
+        .member-card {
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 32px;
+            transition: border-color 0.3s;
+        }
+        .member-card:hover { border-color: rgba(0,229,255,0.18); }
+
+        .avatar {
+            width: 56px; height: 56px;
+            border: 1px solid rgba(0,229,255,0.2);
+            background: rgba(0,229,255,0.04);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up   { animation: fadeUp 0.8s ease forwards; }
+        .fade-up-2 { animation: fadeUp 0.8s 0.15s ease forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.8s 0.3s ease forwards; opacity: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+
+    <!-- Navigation -->
+    <nav class="content fixed top-0 w-full px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent" style="z-index:50;">
+        <div class="flex items-center gap-16">
+            <a href="index.html"><img src="aether-logo.jpg" alt="AETHER" style="height:28px; filter: invert(1); opacity:0.9;"></a>
+            <div class="hidden lg:flex gap-10">
+                <a href="index.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">VISION</a>
+                <a href="problem.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">PROBLEM</a>
+                <a href="solution.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">SOLUTION</a>
+                <a href="team.html" class="mono text-[9px] tracking-[0.3em] text-cyan-400 transition-all">TEAM</a>
+            </div>
+        </div>
+        <div class="hidden sm:block text-right">
+            <p class="mono text-[8px] text-cyan-400 uppercase tracking-widest">System Latency</p>
+            <p class="mono text-[10px] text-white/60">0.0024ms</p>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <main class="content px-10 lg:px-32 pt-40 pb-24">
+        <div class="max-w-5xl">
+            <div class="fade-up">
+                <div class="hud-line"></div>
+                <p class="mono text-[9px] tracking-[0.5em] text-cyan-400 uppercase mb-6">Node_04 / Crew_Manifest</p>
+            </div>
+
+            <h1 class="text-5xl md:text-7xl lg:text-8xl tracking-tighter mb-6 leading-[1.0] fade-up-2">
+                <span class="font-light text-white/40">Built by</span><br/>
+                <span class="font-bold">operators who</span><br/>
+                <span class="font-bold italic text-white/60">flew the mission.</span>
+            </h1>
+
+            <p class="text-base text-white/40 max-w-xl font-light leading-relaxed border-l border-cyan-500/20 pl-6 mb-20 fade-up-2">
+                Aether is built by people who have lived the problem — from launch operations to orbital mechanics research. We know the bottlenecks because we hit them ourselves.
+            </p>
+
+            <!-- Team grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 fade-up-3">
+
+                <div class="member-card">
+                    <div class="avatar">
+                        <span class="mono text-[10px] text-cyan-400/60">01</span>
+                    </div>
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Co-Founder &amp; CEO</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Founder Name</h3>
+                    <p class="text-sm text-white/30 font-light mb-4">PLD Space</p>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">Launch operations and mission planning background. Previously at PLD Space managing payload integration and rideshare logistics.</p>
+                </div>
+
+                <div class="member-card">
+                    <div class="avatar">
+                        <span class="mono text-[10px] text-cyan-400/60">02</span>
+                    </div>
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Co-Founder &amp; CTO</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Founder Name</h3>
+                    <p class="text-sm text-white/30 font-light mb-4">Rocket Lab · UCL ML PhD</p>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">Orbital mechanics and ML systems. PhD in machine learning from UCL, previously engineering at Rocket Lab on trajectory optimisation.</p>
+                </div>
+
+                <div class="member-card">
+                    <div class="avatar">
+                        <span class="mono text-[10px] text-cyan-400/60">03</span>
+                    </div>
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Co-Founder &amp; COO</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Founder Name</h3>
+                    <p class="text-sm text-white/30 font-light mb-4">New Space Operations</p>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">Mission architecture and commercial operations. Extensive experience structuring launch procurement and multi-stakeholder cislunar missions.</p>
+                </div>
+
+            </div>
+
+            <!-- Advisors / backed by -->
+            <div class="mt-20 fade-up-3">
+                <p class="mono text-[8px] tracking-[0.5em] text-white/20 uppercase mb-8">Backed By</p>
+                <div class="flex flex-wrap gap-x-12 gap-y-4 items-center">
+                    <p class="mono text-[10px] text-white/30 tracking-widest">ESA BIC</p>
+                    <p class="mono text-[10px] text-white/30 tracking-widest">UCL HALO</p>
+                    <p class="mono text-[10px] text-white/30 tracking-widest">7+ LOIs SIGNED</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

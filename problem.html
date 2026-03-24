@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER | Problem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .hud-line { height: 1px; background: linear-gradient(90deg, #00E5FF, transparent); width: 100px; margin-bottom: 8px; }
+        .stat-card { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; }
+
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+        }
+        .noise {
+            position: fixed; inset: 0; z-index: 0; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+        .content { position: relative; z-index: 10; }
+
+        .problem-item {
+            border-left: 1px solid rgba(0,229,255,0.15);
+            padding-left: 28px;
+            margin-bottom: 48px;
+        }
+        .problem-item:last-child { margin-bottom: 0; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.8s ease forwards; }
+        .fade-up-2 { animation: fadeUp 0.8s 0.15s ease forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.8s 0.3s ease forwards; opacity: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+    <div class="noise"></div>
+
+    <!-- Navigation -->
+    <nav class="content fixed top-0 w-full px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent" style="z-index:50;">
+        <div class="flex items-center gap-16">
+            <a href="index.html"><img src="aether-logo.jpg" alt="AETHER" style="height:28px; filter: invert(1); opacity:0.9;"></a>
+            <div class="hidden lg:flex gap-10">
+                <a href="index.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">VISION</a>
+                <a href="problem.html" class="mono text-[9px] tracking-[0.3em] text-cyan-400 transition-all">PROBLEM</a>
+                <a href="solution.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">SOLUTION</a>
+                <a href="team.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">TEAM</a>
+            </div>
+        </div>
+        <div class="hidden sm:block text-right">
+            <p class="mono text-[8px] text-cyan-400 uppercase tracking-widest">System Latency</p>
+            <p class="mono text-[10px] text-white/60">0.0024ms</p>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <main class="content min-h-screen flex flex-col justify-center px-10 lg:px-32 pt-32 pb-24">
+        <div class="max-w-5xl">
+            <div class="fade-up">
+                <div class="hud-line"></div>
+                <p class="mono text-[9px] tracking-[0.5em] text-cyan-400 uppercase mb-6">Node_02 / Problem_Statement</p>
+            </div>
+
+            <h1 class="text-5xl md:text-7xl lg:text-8xl tracking-tighter mb-16 leading-[1.0] fade-up-2">
+                <span class="font-light text-white/40">A growing industry</span><br/>
+                <span class="font-bold">still running on</span><br/>
+                <span class="font-bold italic text-white/60">spreadsheets.</span>
+            </h1>
+
+            <div class="fade-up-3 grid grid-cols-1 lg:grid-cols-2 gap-x-24 gap-y-0">
+                <div>
+                    <div class="problem-item">
+                        <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-3">01 / Fragmented Procurement</p>
+                        <p class="text-white/70 font-light leading-relaxed text-sm">Launch slots are sourced through a patchwork of brokers, direct outreach, and RFI processes. There is no single interface to compare, allocate, or optimise across providers.</p>
+                    </div>
+
+                    <div class="problem-item">
+                        <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-3">02 / Manual Mission Planning</p>
+                        <p class="text-white/70 font-light leading-relaxed text-sm">Trajectory design, manifest optimisation, and transfer window scheduling are done manually or with siloed tools. Errors propagate downstream into costly delays and mass penalties.</p>
+                    </div>
+
+                    <div class="problem-item">
+                        <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-3">03 / No Coordination Layer</p>
+                        <p class="text-white/70 font-light leading-relaxed text-sm">As cislunar traffic grows, multi-stakeholder missions — shared rideshares, lunar relay chains, orbital depots — have no common operating picture. Coordination happens over email.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="problem-item">
+                        <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-3">04 / Utilisation Waste</p>
+                        <p class="text-white/70 font-light leading-relaxed text-sm">Launch vehicles routinely fly with unused mass margin because payloads cannot be efficiently matched, stacked, or rescheduled in real time. Capacity is left on the pad.</p>
+                    </div>
+
+                    <div class="problem-item">
+                        <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-3">05 / Scaling Wall</p>
+                        <p class="text-white/70 font-light leading-relaxed text-sm">The processes that work at 50 launches per year will collapse at 500. The cislunar economy requires infrastructure-grade logistics software before it can reach full operational tempo.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mt-12">
+                        <div class="stat-card">
+                            <p class="mono text-[8px] uppercase tracking-widest mb-2 text-cyan-400/50">Current Stack</p>
+                            <p class="mono text-[11px] text-white/60">Excel · Email · RFIs</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="mono text-[8px] uppercase tracking-widest mb-2 text-cyan-400/50">Market by 2030</p>
+                            <p class="mono text-[11px] text-white/60">$50B+ cislunar economy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

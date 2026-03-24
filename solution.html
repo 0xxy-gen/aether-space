@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER | Solution</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .hud-line { height: 1px; background: linear-gradient(90deg, #00E5FF, transparent); width: 100px; margin-bottom: 8px; }
+        .stat-card { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; }
+
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+        }
+        .content { position: relative; z-index: 10; }
+
+        .feature-card {
+            border: 1px solid rgba(0,229,255,0.08);
+            padding: 28px;
+            background: rgba(0,229,255,0.02);
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .feature-card:hover {
+            border-color: rgba(0,229,255,0.2);
+            background: rgba(0,229,255,0.04);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up   { animation: fadeUp 0.8s ease forwards; }
+        .fade-up-2 { animation: fadeUp 0.8s 0.15s ease forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.8s 0.3s ease forwards; opacity: 0; }
+        .fade-up-4 { animation: fadeUp 0.8s 0.45s ease forwards; opacity: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+
+    <!-- Navigation -->
+    <nav class="content fixed top-0 w-full px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent" style="z-index:50;">
+        <div class="flex items-center gap-16">
+            <a href="index.html"><img src="aether-logo.jpg" alt="AETHER" style="height:28px; filter: invert(1); opacity:0.9;"></a>
+            <div class="hidden lg:flex gap-10">
+                <a href="index.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">VISION</a>
+                <a href="problem.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">PROBLEM</a>
+                <a href="solution.html" class="mono text-[9px] tracking-[0.3em] text-cyan-400 transition-all">SOLUTION</a>
+                <a href="team.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">TEAM</a>
+            </div>
+        </div>
+        <div class="hidden sm:block text-right">
+            <p class="mono text-[8px] text-cyan-400 uppercase tracking-widest">System Latency</p>
+            <p class="mono text-[10px] text-white/60">0.0024ms</p>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <main class="content px-10 lg:px-32 pt-40 pb-24">
+        <div class="max-w-5xl">
+            <div class="fade-up">
+                <div class="hud-line"></div>
+                <p class="mono text-[9px] tracking-[0.5em] text-cyan-400 uppercase mb-6">Node_03 / Solution_Architecture</p>
+            </div>
+
+            <h1 class="text-5xl md:text-7xl lg:text-8xl tracking-tighter mb-6 leading-[1.0] fade-up-2">
+                <span class="font-light text-white/40">The operating system</span><br/>
+                <span class="font-bold">for orbital</span><br/>
+                <span class="font-bold italic text-white/60">logistics.</span>
+            </h1>
+
+            <p class="text-base text-white/40 max-w-xl font-light leading-relaxed border-l border-cyan-500/20 pl-6 mb-20 fade-up-3">
+                Aether unifies mission planning, launch allocation, and manifest optimisation into a single programmable platform — replacing fragmented workflows with a coordinated, high-utilisation system.
+            </p>
+
+            <!-- Feature grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 fade-up-4">
+
+                <div class="feature-card">
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-4">01 / Mission Planning</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-3">Automated trajectory design</h3>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">Kepler-correct transfer windows, Hohmann arcs, and LOI sequencing — computed automatically for any destination from LEO to cislunar.</p>
+                </div>
+
+                <div class="feature-card">
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-4">02 / Launch Allocation</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-3">Real-time slot matching</h3>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">A single interface across launch providers. Compare, negotiate, and confirm rideshare slots without brokers or RFI chains.</p>
+                </div>
+
+                <div class="feature-card">
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-4">03 / Manifest Optimisation</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-3">Maximum utilisation per flight</h3>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">Payload stacking, mass margin recovery, and schedule rebalancing — automated to fill every kilogram of available capacity.</p>
+                </div>
+
+                <div class="feature-card">
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-4">04 / Coordination Layer</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-3">Shared operating picture</h3>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">Multi-stakeholder missions — relay chains, orbital depots, shared rideshares — managed through a single real-time coordination interface.</p>
+                </div>
+
+                <div class="feature-card">
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-4">05 / Programmable API</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-3">Infrastructure-grade stack</h3>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">Every workflow is API-first. Operators embed Aether into existing systems; launch providers expose capacity programmatically.</p>
+                </div>
+
+                <div class="feature-card flex flex-col justify-between">
+                    <div>
+                        <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-4">Status</p>
+                        <h3 class="text-lg font-semibold tracking-tight mb-3">Private Beta</h3>
+                        <p class="text-sm text-white/40 font-light leading-relaxed">7+ LOIs signed. Built by operators from PLD Space, Rocket Lab &amp; UCL ML PhD.</p>
+                    </div>
+                    <a href="index.html">
+                        <button class="mt-6 w-full bg-cyan-500 hover:bg-cyan-400 text-black font-semibold px-6 py-3 text-sm tracking-wide transition-colors cursor-pointer">
+                            Join Waitlist →
+                        </button>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
