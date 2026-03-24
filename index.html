@@ -1003,22 +1003,27 @@
 
             // ═══════════════════════════════════════════════════════════════════════
             //  PHASE 0 — Ascent arc  (historic launch site → Moon-facing LEO)
-            //  Quadratic Bézier from geographic surface point to e1·R_LEO so the
-            //  arc connects cleanly into the LEO parking orbit ring (c1.getPoint(0)).
+            //  Great-circle lerp approach — safe for antipodal sites (Baikonur,
+            //  Wenchang, Tanegashima) where launchDir ≈ −e1 and a Bézier control
+            //  point collapses to zero, sending the arc through Earth's interior.
             // ═══════════════════════════════════════════════════════════════════════
-            const p0_asc = launchDir.clone().multiplyScalar(R_SURF);   // surface at launch site
-            const p2_asc = e1.clone().multiplyScalar(R_LEO);           // Moon-facing LEO = c1.getPoint(0)
-            const midDir_asc = p0_asc.clone().add(p2_asc).normalize();
-            const p1_asc = midDir_asc.multiplyScalar(R_SURF + 0.55 * (R_LEO - R_SURF));
-            const c0pts  = [];
-            for (let k = 0; k <= 32; k++) {
-                const tt = k / 32;
-                const u  = 1 - tt;
-                c0pts.push(new THREE.Vector3(
-                    u*u*p0_asc.x + 2*u*tt*p1_asc.x + tt*tt*p2_asc.x,
-                    u*u*p0_asc.y + 2*u*tt*p1_asc.y + tt*tt*p2_asc.y,
-                    u*u*p0_asc.z + 2*u*tt*p1_asc.z + tt*tt*p2_asc.z
-                ));
+            const c0pts = [];
+            for (let k = 0; k <= 48; k++) {
+                const t   = k / 48;
+                const raw = new THREE.Vector3(
+                    (1 - t) * launchDir.x + t * e1.x,
+                    (1 - t) * launchDir.y + t * e1.y,
+                    (1 - t) * launchDir.z + t * e1.z
+                );
+                // Guard against near-zero vector when sites are antipodal to Moon
+                if (raw.length() < 0.15) {
+                    const perp = Math.abs(launchDir.y) > 0.9
+                        ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+                    raw.addScaledVector(perp, 0.4);
+                }
+                raw.normalize();
+                const r = R_SURF + (R_LEO - R_SURF) * t + Math.sin(t * Math.PI) * 2.5;
+                c0pts.push(raw.multiplyScalar(r));
             }
             const c0 = new THREE.CatmullRomCurve3(c0pts, false);
             const a0  = (R_SURF + R_LEO) / 2;
