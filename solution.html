@@ -40,6 +40,17 @@
         .fade-up-2 { animation: fadeUp 0.8s 0.15s ease forwards; opacity: 0; }
         .fade-up-3 { animation: fadeUp 0.8s 0.3s ease forwards; opacity: 0; }
         .fade-up-4 { animation: fadeUp 0.8s 0.45s ease forwards; opacity: 0; }
+
+        /* Contact drawer */
+        #contact-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+        #contact-overlay.open { opacity: 1; pointer-events: auto; }
+        #contact-drawer { position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 440px; background: #080808; border-left: 1px solid rgba(255,255,255,0.08); z-index: 201; display: flex; flex-direction: column; padding: 48px 40px; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); }
+        #contact-drawer.open { transform: translateX(0); }
+        .contact-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+        .contact-field label { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+        .contact-field input, .contact-field textarea { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.12); color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; padding: 10px 0; outline: none; resize: none; transition: border-color 0.2s; }
+        .contact-field input:focus, .contact-field textarea:focus { border-bottom-color: rgba(0,229,255,0.6); }
+        .contact-field textarea { min-height: 100px; }
     </style>
 </head>
 <body>
@@ -57,11 +68,30 @@
                 <a href="team.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">TEAM</a>
             </div>
         </div>
-        <div class="hidden sm:block text-right">
-            <p class="mono text-[8px] text-cyan-400 uppercase tracking-widest">System Latency</p>
-            <p class="mono text-[10px] text-white/60">0.0024ms</p>
+        <div class="flex items-center gap-8">
+            <div class="hidden sm:block text-right">
+                <p class="mono text-[8px] text-cyan-400 uppercase tracking-widest">System Latency</p>
+                <p class="mono text-[10px] text-white/60">0.0024ms</p>
+            </div>
+            <button onclick="openContact()" class="mono text-[9px] tracking-[0.25em] bg-white text-black px-5 py-2 font-medium hover:bg-white/90 transition-colors cursor-pointer">CONTACT US</button>
         </div>
     </nav>
+
+    <div id="contact-overlay" onclick="closeContact()"></div>
+    <div id="contact-drawer">
+        <div class="flex justify-between items-start mb-12">
+            <div>
+                <div style="height:1px; width:40px; background:linear-gradient(90deg,#00E5FF,transparent); margin-bottom:8px;"></div>
+                <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-2">Comms_Link</p>
+                <h2 class="text-2xl font-semibold tracking-tight">Get in touch</h2>
+            </div>
+            <button onclick="closeContact()" class="mono text-[10px] text-white/30 hover:text-white transition-colors cursor-pointer mt-1">✕ CLOSE</button>
+        </div>
+        <div class="contact-field"><label>Your Name</label><input type="text" placeholder="Full name"></div>
+        <div class="contact-field"><label>Your Email</label><input type="email" placeholder="you@example.com"></div>
+        <div class="contact-field"><label>Your Message</label><textarea placeholder="Tell us what you're working on…"></textarea></div>
+        <button class="mt-4 w-full bg-white text-black font-semibold py-3 text-sm tracking-wide hover:bg-white/90 transition-colors cursor-pointer">Submit →</button>
+    </div>
 
     <!-- Hero -->
     <main class="content px-10 lg:px-32 pt-40 pb-24">
@@ -131,5 +161,10 @@
         </div>
     </main>
 
+    <script>
+        function openContact() { document.getElementById('contact-overlay').classList.add('open'); document.getElementById('contact-drawer').classList.add('open'); }
+        function closeContact() { document.getElementById('contact-overlay').classList.remove('open'); document.getElementById('contact-drawer').classList.remove('open'); }
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeContact(); });
+    </script>
 </body>
 </html>
