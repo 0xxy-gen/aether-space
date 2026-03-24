@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER | Careers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .hud-line { height: 1px; background: linear-gradient(90deg, #00E5FF, transparent); width: 100px; margin-bottom: 8px; }
+
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+        }
+        .content { position: relative; z-index: 10; }
+
+        .role-card {
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 28px 32px;
+            transition: border-color 0.3s, background 0.3s;
+            cursor: pointer;
+        }
+        .role-card:hover { border-color: rgba(0,229,255,0.2); background: rgba(0,229,255,0.02); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up   { animation: fadeUp 0.8s ease forwards; }
+        .fade-up-2 { animation: fadeUp 0.8s 0.15s ease forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.8s 0.3s ease forwards; opacity: 0; }
+        .fade-up-4 { animation: fadeUp 0.8s 0.45s ease forwards; opacity: 0; }
+
+        /* Contact drawer */
+        #contact-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+        #contact-overlay.open { opacity: 1; pointer-events: auto; }
+        #contact-drawer { position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 440px; background: #080808; border-left: 1px solid rgba(255,255,255,0.08); z-index: 201; display: flex; flex-direction: column; padding: 48px 40px; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); }
+        #contact-drawer.open { transform: translateX(0); }
+        .contact-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+        .contact-field label { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+        .contact-field input, .contact-field textarea { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.12); color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; padding: 10px 0; outline: none; resize: none; transition: border-color 0.2s; }
+        .contact-field input:focus, .contact-field textarea:focus { border-bottom-color: rgba(0,229,255,0.6); }
+        .contact-field textarea { min-height: 100px; }
+
+        /* Apply drawer */
+        #apply-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+        #apply-overlay.open { opacity: 1; pointer-events: auto; }
+        #apply-drawer { position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 480px; background: #080808; border-left: 1px solid rgba(255,255,255,0.08); z-index: 201; display: flex; flex-direction: column; padding: 48px 40px; overflow-y: auto; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); }
+        #apply-drawer.open { transform: translateX(0); }
+        .apply-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+        .apply-field label { font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+        .apply-field input, .apply-field textarea { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.12); color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 300; padding: 10px 0; outline: none; resize: none; transition: border-color 0.2s; }
+        .apply-field input:focus, .apply-field textarea:focus { border-bottom-color: rgba(0,229,255,0.6); }
+        .apply-field textarea { min-height: 100px; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+
+    <!-- Navigation -->
+    <nav class="content fixed top-0 w-full px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent" style="z-index:50;">
+        <div class="flex items-center gap-16">
+            <a href="index.html"><img src="images/aether-logo.jpg" alt="AETHER" style="height:28px; filter: invert(1); opacity:0.9;"></a>
+            <div class="hidden lg:flex gap-10">
+                <a href="team.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">TEAM</a>
+                <a href="solution.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">SOLUTION</a>
+                <a href="partnerships.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">PARTNERSHIPS</a>
+                <a href="careers.html" class="mono text-[9px] tracking-[0.3em] text-cyan-400 transition-all">CAREERS</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-8">
+            <div class="hidden sm:block text-right">
+                <p class="mono text-[8px] text-cyan-400 uppercase tracking-widest">System Latency</p>
+                <p class="mono text-[10px] text-white/60">0.0024ms</p>
+            </div>
+            <button onclick="openContact()" class="mono text-[9px] tracking-[0.25em] bg-white text-black px-5 py-2 font-medium hover:bg-white/90 transition-colors cursor-pointer">CONTACT US</button>
+        </div>
+    </nav>
+
+    <div id="contact-overlay" onclick="closeContact()"></div>
+    <div id="contact-drawer">
+        <div class="flex justify-between items-start mb-12">
+            <div>
+                <div style="height:1px; width:40px; background:linear-gradient(90deg,#00E5FF,transparent); margin-bottom:8px;"></div>
+                <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-2">Comms_Link</p>
+                <h2 class="text-4xl tracking-tighter leading-[1.05] mb-0">Working on something<br/><span class="font-bold italic">mission-critical?</span><br/><span class="font-light text-white/40">Get in touch.</span></h2>
+            </div>
+            <button onclick="closeContact()" class="mono text-[10px] text-white/30 hover:text-white transition-colors cursor-pointer mt-1">✕ CLOSE</button>
+        </div>
+        <div class="contact-field"><label>Your Name</label><input type="text" placeholder="Full name"></div>
+        <div class="contact-field"><label>Your Email</label><input type="email" placeholder="you@example.com"></div>
+        <div class="contact-field"><label>Your Message</label><textarea placeholder="Tell us what you're working on…"></textarea></div>
+        <button class="mt-4 w-full bg-white text-black font-semibold py-3 text-sm tracking-wide hover:bg-white/90 transition-colors cursor-pointer">Submit →</button>
+    </div>
+
+    <!-- Apply drawer -->
+    <div id="apply-overlay" onclick="closeApply()"></div>
+    <div id="apply-drawer">
+        <div class="flex justify-between items-start mb-10">
+            <div>
+                <div style="height:1px; width:40px; background:linear-gradient(90deg,#00E5FF,transparent); margin-bottom:8px;"></div>
+                <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/60 uppercase mb-2">Apply</p>
+                <h2 id="apply-role-title" class="text-3xl tracking-tighter leading-[1.1] mb-0 font-bold"></h2>
+            </div>
+            <button onclick="closeApply()" class="mono text-[10px] text-white/30 hover:text-white transition-colors cursor-pointer mt-1">✕ CLOSE</button>
+        </div>
+        <div class="apply-field"><label>Full Name</label><input type="text" placeholder="Your full name"></div>
+        <div class="apply-field"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+        <div class="apply-field"><label>LinkedIn or Portfolio URL</label><input type="url" placeholder="https://"></div>
+        <div class="apply-field"><label>Why Aether?</label><textarea placeholder="What draws you to this role and to Aether?"></textarea></div>
+        <div class="apply-field"><label>Anything else?</label><textarea placeholder="Relevant experience, projects, or links…" style="min-height:80px;"></textarea></div>
+        <button class="mt-2 w-full bg-cyan-400 hover:bg-cyan-300 text-black font-semibold py-3 text-sm tracking-wide transition-colors cursor-pointer">Submit Application →</button>
+    </div>
+
+    <!-- Main -->
+    <main class="content min-h-screen px-10 lg:px-32 pt-40 pb-24">
+        <div class="w-full max-w-3xl">
+            <div class="fade-up">
+                <div class="hud-line"></div>
+                <p class="mono text-[9px] tracking-[0.5em] text-cyan-400 uppercase mb-6">Careers</p>
+            </div>
+
+            <h1 class="text-4xl md:text-5xl lg:text-6xl tracking-tighter mb-4 leading-[1.0] fade-up-2">
+                <span class="font-light text-white/40">Build the infrastructure</span><br/>
+                <span class="font-bold italic">for space logistics.</span>
+            </h1>
+
+            <p class="text-base text-white/40 font-light leading-relaxed border-l border-cyan-500/20 pl-6 mb-16 fade-up-2">
+                We're a small team solving a hard coordination problem at the frontier of the space economy. If you want your work to matter, we'd like to hear from you.
+            </p>
+
+            <!-- Open roles -->
+            <div class="fade-up-3 mb-16">
+                <p class="mono text-[8px] tracking-[0.5em] text-white/20 uppercase mb-6">Open Roles</p>
+                <div class="flex flex-col gap-3">
+
+                    <div class="role-card" onclick="openApply('Founding Engineer — Backend & Optimisation')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="mono text-[8px] tracking-[0.3em] text-cyan-400/50 uppercase mb-2">Engineering</p>
+                                <h3 class="text-base font-semibold tracking-tight mb-1">Founding Engineer — Backend & Optimisation</h3>
+                                <p class="text-sm text-white/30 font-light">Full-stack systems thinking. Python, APIs, scheduling algorithms.</p>
+                            </div>
+                            <span class="mono text-[9px] text-white/20 mt-1 ml-8 shrink-0">Remote / London</span>
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="openApply('Astrodynamics & Mission Planning Engineer')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="mono text-[8px] tracking-[0.3em] text-cyan-400/50 uppercase mb-2">Engineering</p>
+                                <h3 class="text-base font-semibold tracking-tight mb-1">Astrodynamics & Mission Planning Engineer</h3>
+                                <p class="text-sm text-white/30 font-light">Orbital mechanics, trajectory design, transfer window modelling.</p>
+                            </div>
+                            <span class="mono text-[9px] text-white/20 mt-1 ml-8 shrink-0">Remote / London</span>
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="openApply('Growth & Partnerships Lead')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="mono text-[8px] tracking-[0.3em] text-cyan-400/50 uppercase mb-2">Business</p>
+                                <h3 class="text-base font-semibold tracking-tight mb-1">Growth & Partnerships Lead</h3>
+                                <p class="text-sm text-white/30 font-light">Launch provider and satellite operator relationships. Early-stage BD.</p>
+                            </div>
+                            <span class="mono text-[9px] text-white/20 mt-1 ml-8 shrink-0">Remote / London</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- General -->
+            <div class="fade-up-4 border-t border-white/06 pt-10">
+                <p class="mono text-[8px] tracking-[0.5em] text-white/20 uppercase mb-4">Don't see your role?</p>
+                <p class="text-sm text-white/40 font-light leading-relaxed mb-6">We hire for rare combinations of domain depth and generalist ability. If you think you belong here, tell us why.</p>
+                <button onclick="openApply('General Application')" class="mono text-[9px] tracking-[0.25em] border border-white/20 text-white/60 hover:border-cyan-400/50 hover:text-cyan-400 px-6 py-3 transition-colors cursor-pointer">SEND GENERAL APPLICATION →</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function openContact() { document.getElementById('contact-overlay').classList.add('open'); document.getElementById('contact-drawer').classList.add('open'); }
+        function closeContact() { document.getElementById('contact-overlay').classList.remove('open'); document.getElementById('contact-drawer').classList.remove('open'); }
+
+        function openApply(role) {
+            document.getElementById('apply-role-title').textContent = role;
+            document.getElementById('apply-overlay').classList.add('open');
+            document.getElementById('apply-drawer').classList.add('open');
+        }
+        function closeApply() {
+            document.getElementById('apply-overlay').classList.remove('open');
+            document.getElementById('apply-drawer').classList.remove('open');
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { closeContact(); closeApply(); }
+        });
+    </script>
+</body>
+</html>
