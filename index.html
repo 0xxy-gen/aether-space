@@ -266,6 +266,8 @@
         let rocketSystem = [];
         let satSystem = [];
         let scrollProgress = 0;
+        let curiosityRover = null;
+        let curiosityRoverAngle = 0;
         const loader = new THREE.TextureLoader();
         let lastFrameTime = performance.now();
 
@@ -428,6 +430,108 @@
             moon.position.set(50, 5, -40);
             scene.add(moon);
 
+            // Lunar landers on Moon surface (ESA-style)
+            function createLunarLander(phi, theta) {
+                const silverMat = new THREE.MeshBasicMaterial({ color: 0xb8bcc0 });
+                const darkMat   = new THREE.MeshBasicMaterial({ color: 0x1e1e1e }); // solar panel body
+                const goldMat   = new THREE.MeshBasicMaterial({ color: 0xbf8c1a });
+                const whiteMat  = new THREE.MeshBasicMaterial({ color: 0xe8e8e8 });
+                const nozzleMat = new THREE.MeshBasicMaterial({ color: 0x888888 });
+
+                const g = new THREE.Group();
+
+                // Helper: cylinder between two points
+                function tube(ax, ay, az, bx, by, bz, r, mat) {
+                    const a = new THREE.Vector3(ax, ay, az);
+                    const b = new THREE.Vector3(bx, by, bz);
+                    const dir = b.clone().sub(a);
+                    const len = dir.length();
+                    const mid = a.clone().add(b).multiplyScalar(0.5);
+                    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 6), mat);
+                    cyl.position.copy(mid);
+                    cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.normalize());
+                    g.add(cyl);
+                }
+
+                // ── Main cylindrical body with dark solar-panel wrap ──
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.095, 0.17, 16), darkMat);
+                body.position.y = 0.145;
+                g.add(body);
+
+                // Silver structural ring at top and bottom of body
+                [0.06, 0.23].forEach(y => {
+                    const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.098, 0.098, 0.012, 16), silverMat);
+                    ring.position.y = y;
+                    g.add(ring);
+                });
+
+                // ── Top deck ──
+                const deck = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.01, 16), silverMat);
+                deck.position.y = 0.237;
+                g.add(deck);
+
+                // Gold equipment boxes on deck
+                [[0.03, 0.248, 0.03], [-0.04, 0.248, -0.02]].forEach(([x,y,z]) => {
+                    const box = new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.022, 0.032), goldMat);
+                    box.position.set(x,y,z);
+                    g.add(box);
+                });
+
+                // HGA dish + stalk
+                tube(0.02, 0.245, 0.04, -0.02, 0.295, 0.06, 0.004, whiteMat);
+                const dish = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.012, 0.008, 12), whiteMat);
+                dish.position.set(-0.022, 0.3, 0.062);
+                dish.rotation.z = 0.5; dish.rotation.x = -0.3;
+                g.add(dish);
+
+                // Tall antenna mast
+                tube(0.05, 0.237, -0.03, 0.055, 0.36, -0.03, 0.003, silverMat);
+                const antTop = new THREE.Mesh(new THREE.SphereGeometry(0.007, 5, 5), whiteMat);
+                antTop.position.set(0.055, 0.365, -0.03);
+                g.add(antTop);
+
+                // ── 4 descent engine nozzles (cones) ──
+                [[ 0.04, 0, 0.04],[-0.04, 0, 0.04],
+                 [ 0.04, 0,-0.04],[-0.04, 0,-0.04]].forEach(([x,,z]) => {
+                    const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.022, 0.045, 8), nozzleMat);
+                    nozzle.position.set(x, 0.05, z);
+                    g.add(nozzle);
+                });
+
+                // ── 4 landing legs: primary strut + 2 diagonal braces + gold foot pad ──
+                [[ 1, 1],[-1, 1],[ 1,-1],[-1,-1]].forEach(([sx, sz]) => {
+                    const fx = sx * 0.175, fz = sz * 0.175, fy = -0.09;
+                    const bx = sx * 0.085, bz = sz * 0.085;
+
+                    // Primary leg (body base → foot)
+                    tube(bx, 0.06, bz, fx, fy, fz, 0.007, silverMat);
+                    // Upper diagonal brace (mid-body → foot)
+                    tube(bx * 0.7, 0.18, bz * 0.7, fx, fy, fz, 0.005, silverMat);
+                    // Cross brace (mid primary → mid body)
+                    tube(bx, 0.06, bz, bx * 0.7, 0.18, bz * 0.7, 0.004, silverMat);
+
+                    // Gold foot pad
+                    const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.008, 8), goldMat);
+                    pad.position.set(fx, fy - 0.005, fz);
+                    g.add(pad);
+                });
+
+                // Position on Moon surface — offset so feet (at y=-0.095) sit exactly on r=3
+                const moonR = 3.095;
+                const normal = new THREE.Vector3(
+                    Math.sin(phi) * Math.cos(theta),
+                    Math.cos(phi),
+                    Math.sin(phi) * Math.sin(theta)
+                );
+                g.position.copy(normal.clone().multiplyScalar(moonR));
+                g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), normal);
+                moon.add(g);
+            }
+
+            createLunarLander(Math.PI * 0.49, 2.47);  // apex
+            createLunarLander(Math.PI * 0.55, 2.28);  // bottom-left
+            createLunarLander(Math.PI * 0.55, 2.66);  // bottom-right
+
             // 3. MARS — solid color first, apply texture only on successful load
             const marsGeo = new THREE.SphereGeometry(1.25, 64, 64);
             const marsMat = new THREE.MeshBasicMaterial({ color: 0xc1440e });
@@ -463,6 +567,123 @@
             });
             mars.add(new THREE.Mesh(marsAtmosGeo, marsAtmosMat));
 
+
+            // Curiosity rover on Mars
+            (function() {
+                const R = 1.255;
+                const bodyMat  = new THREE.MeshBasicMaterial({ color: 0xa09888 }); // warm grey chassis
+                const wheelMat = new THREE.MeshBasicMaterial({ color: 0x444444 }); // dark alloy wheels
+                const goldMat  = new THREE.MeshBasicMaterial({ color: 0xb8901e }); // gold thermal foil
+                const whiteMat = new THREE.MeshBasicMaterial({ color: 0xcccccc });
+                const darkMat  = new THREE.MeshBasicMaterial({ color: 0x222222 });
+
+                const rover = new THREE.Group();
+
+                // ── Chassis deck (slightly trapezoidal feel via two boxes) ──
+                const deck = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.025, 0.085), bodyMat);
+                deck.position.y = 0.012;
+                rover.add(deck);
+
+                // Gold thermal blanket on top of deck
+                const blanket = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.006, 0.065), goldMat);
+                blanket.position.set(-0.005, 0.028, 0);
+                rover.add(blanket);
+
+                // Equipment bay (taller box, front half) — science instruments
+                const bay = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.038, 0.075), bodyMat);
+                bay.position.set(0.035, 0.044, 0);
+                rover.add(bay);
+
+                // ── RTG — rear-mounted nuclear power, horizontal cylinder ──
+                const rtg = new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.055, 8), bodyMat);
+                rtg.rotation.z = Math.PI / 2;
+                rtg.position.set(-0.084, 0.01, 0);
+                rover.add(rtg);
+                // RTG cooling fins (two flat slabs)
+                [-1, 1].forEach(s => {
+                    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.022, 0.004), bodyMat);
+                    fin.position.set(-0.084, 0.01, s * 0.018);
+                    rover.add(fin);
+                });
+
+                // ── Remote Sensing Mast (RSM) — tall, sits rear-centre of deck ──
+                const mastBase = new THREE.Mesh(new THREE.BoxGeometry(0.009, 0.012, 0.009), whiteMat);
+                mastBase.position.set(0.028, 0.032, 0);
+                rover.add(mastBase);
+                const mastPole = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.006, 0.085, 6), whiteMat);
+                mastPole.position.set(0.028, 0.082, 0);
+                rover.add(mastPole);
+                // Mastcam box at top
+                const mastTop = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.016, 0.018), whiteMat);
+                mastTop.position.set(0.028, 0.13, 0);
+                rover.add(mastTop);
+                // Twin camera eyes
+                [-1, 1].forEach(s => {
+                    const camEye = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.006, 6), darkMat);
+                    camEye.rotation.x = Math.PI / 2;
+                    camEye.position.set(0.028, 0.131, s * 0.007 + 0.012);
+                    rover.add(camEye);
+                });
+                // ChemCam laser barrel (single small tube on top of mast head)
+                const laser = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.014, 5), darkMat);
+                laser.rotation.x = Math.PI / 2;
+                laser.position.set(0.028, 0.137, 0.017);
+                rover.add(laser);
+
+                // ── HGA — high-gain antenna dish at rear ──
+                const hgaStalk = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.03, 5), whiteMat);
+                hgaStalk.position.set(-0.055, 0.04, 0);
+                hgaStalk.rotation.z = -0.4;
+                rover.add(hgaStalk);
+                const hgaDish = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.008, 0.005, 10), whiteMat);
+                hgaDish.position.set(-0.065, 0.055, 0);
+                hgaDish.rotation.z = -0.4;
+                rover.add(hgaDish);
+
+                // ── Robotic arm (front, folded) ──
+                const armUpper = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.038, 0.005), bodyMat);
+                armUpper.position.set(0.068, 0.012, 0.025);
+                armUpper.rotation.z = 0.5;
+                rover.add(armUpper);
+                const armLower = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.032, 0.005), bodyMat);
+                armLower.position.set(0.082, -0.008, 0.025);
+                armLower.rotation.z = -0.3;
+                rover.add(armLower);
+
+                // ── 6 wheels with rocker-bogie offset ──
+                // Curiosity's front/rear wheels droop lower than mid wheels
+                const wheelY   = { front: -0.028, mid: -0.022, rear: -0.028 };
+                const wheelPos = [
+                    { z:  0.055, yOff: wheelY.front },
+                    { z:  0,     yOff: wheelY.mid   },
+                    { z: -0.055, yOff: wheelY.rear  },
+                ];
+                [-1, 1].forEach(side => {
+                    wheelPos.forEach(wp => {
+                        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.016, 12), wheelMat);
+                        wheel.rotation.z = Math.PI / 2;
+                        wheel.position.set(side * 0.072, wp.yOff, wp.z);
+                        rover.add(wheel);
+                        // Wheel hub detail
+                        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.017, 6),
+                            new THREE.MeshBasicMaterial({ color: 0x888888 }));
+                        hub.rotation.z = Math.PI / 2;
+                        hub.position.set(side * 0.072, wp.yOff, wp.z);
+                        rover.add(hub);
+                    });
+                });
+
+                // Place on Mars surface facing screen
+                const marsPos = new THREE.Vector3(60, -22, -42);
+                const toOrigin = marsPos.clone().negate().normalize();
+                const up = new THREE.Vector3(0, 1, 0);
+                const orbitAxis = new THREE.Vector3().crossVectors(toOrigin, up).normalize();
+
+                rover.position.copy(toOrigin.clone().multiplyScalar(R));
+                rover.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), toOrigin);
+                mars.add(rover);
+                curiosityRover = { mesh: rover, axis: orbitAxis, normal: toOrigin.clone() };
+            })();
 
             // 4. ORBITAL ROCKETS (circling Earth)
             createOrbitalRocket(13.5, Math.PI * 0.18,  0.0,  0x7ff0ff, orbitalSpeedForRadius(13.5));
@@ -600,6 +821,21 @@
 
             // Satellite rotation
             satSystem.forEach(s => s.mesh.rotation.y += s.speed * frameScale);
+
+            // Curiosity rover — patrol a great circle on Mars surface
+            if (curiosityRover) {
+                curiosityRoverAngle += 0.0015 * frameScale;
+                const qRot = new THREE.Quaternion().setFromAxisAngle(curiosityRover.axis, curiosityRoverAngle);
+                const newNormal = curiosityRover.normal.clone().applyQuaternion(qRot);
+                curiosityRover.mesh.position.copy(newNormal.clone().multiplyScalar(1.26));
+                const tangent = new THREE.Vector3().crossVectors(curiosityRover.axis, newNormal).normalize();
+                const m = new THREE.Matrix4().makeBasis(
+                    tangent,
+                    newNormal,
+                    new THREE.Vector3().crossVectors(tangent, newNormal).normalize()
+                );
+                curiosityRover.mesh.quaternion.setFromRotationMatrix(m);
+            }
 
             // Rocket movement
             rocketSystem.forEach(r => {
