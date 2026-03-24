@@ -249,7 +249,7 @@
         // Camera waypoints
         const CAM_START  = { x: -12,  y: 8,  z: 80   };  // close Earth
         const CAM_END    = { x: 35,   y: 10, z: -12  };  // close Moon
-        const CAM_MARS   = { x: 63,  y: -17, z: -14  };  // close Mars, same offset as Moon cam
+        const CAM_MARS   = { x: 70,  y: -19, z: -26  };  // close Mars — tighter zoom
         const LOOK_START = { x: 0,   y: 0,   z: 0    };  // Earth center
         const LOOK_END   = { x: 40,  y: 4,   z: -44  };  // right of Moon — Moon sits left of frame
         const LOOK_MARS  = { x: 75,  y: -24, z: -46  };  // left of Mars — Mars sits right of frame
@@ -327,7 +327,7 @@
             scene.add(moon);
 
             // 3. MARS — solid color first, apply texture only on successful load
-            const marsGeo = new THREE.SphereGeometry(1.2, 64, 64);
+            const marsGeo = new THREE.SphereGeometry(2.5, 64, 64);
             const marsMat = new THREE.MeshBasicMaterial({ color: 0xc1440e });
 
             function tryMarsTexture(urls, index) {
@@ -351,7 +351,7 @@
             scene.add(mars);
 
             // Mars dust atmosphere glow
-            const marsAtmosGeo = new THREE.SphereGeometry(1.28, 64, 64);
+            const marsAtmosGeo = new THREE.SphereGeometry(2.65, 64, 64);
             const marsAtmosMat = new THREE.ShaderMaterial({
                 side: THREE.BackSide,
                 transparent: true,
@@ -1251,8 +1251,8 @@
             // ── Orbital radii ─────────────────────────────────────────────────────
             const R_SURF = 12;    // Earth surface
             const R_LEO  = 14.5;  // LEO parking orbit
-            const R_MO   = 3.2;   // Mars parking orbit radius (from Mars center)
-            const R_MARS = 1.4;   // Mars surface (~visual radius 1.2 + thin atmosphere)
+            const R_MO   = 6.5;   // Mars parking orbit radius (from Mars center)
+            const R_MARS = 2.8;   // Mars surface (~visual radius 2.5 + thin atmosphere)
 
             // ── Vis-viva / Kepler helpers ──────────────────────────────────────────
             const Thalf = (a, mu) => Math.PI     * Math.pow(a, 1.5) / Math.sqrt(mu);
