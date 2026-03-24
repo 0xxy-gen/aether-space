@@ -754,14 +754,14 @@
 
                     // ── LEO insertion burn flash ──────────────────────────────
                     const burnPos = rocket.position.clone();
-                    const fMat = new THREE.MeshBasicMaterial({ color: 0xffddaa, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false });
+                    const fMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false });
                     const flash = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), fMat);
                     flash.position.copy(burnPos);
                     scene.add(flash);
                     gsap.to(flash.scale, { x: 2.5, y: 2.5, z: 2.5, duration: 0.35, ease: 'power2.out' });
                     gsap.to(fMat, { opacity: 0, duration: 0.35, ease: 'power2.in', onComplete: () => scene.remove(flash) });
 
-                    const gMat = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+                    const gMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false });
                     const glow = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), gMat);
                     glow.position.copy(burnPos);
                     scene.add(glow);
@@ -777,7 +777,7 @@
                             -e_t.z + (Math.random() - 0.5) * spread
                         ).normalize();
                         const pGeo = new THREE.BufferGeometry().setFromPoints([burnPos.clone(), burnPos.clone().addScaledVector(dir, len)]);
-                        const pMat = new THREE.LineBasicMaterial({ color: i < 2 ? 0xff6600 : 0xff2200, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+                        const pMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false });
                         const streak = new THREE.Line(pGeo, pMat);
                         scene.add(streak);
                         gsap.to(pMat, { opacity: 0, duration: 0.4 + Math.random() * 0.4, ease: 'power2.in', onComplete: () => scene.remove(streak) });
