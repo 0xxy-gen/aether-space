@@ -1118,11 +1118,12 @@
             // c4[N]  = θ=0: moonPos – e1·R_MOON  (near-side surface landing) ✓
 
             // ── Trajectory previews ───────────────────────────────────────────────
-            // Earth-side paths (ascent, LEO ring, TLI arc) — faint guides
             const faintMat      = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.10 });
             const ascentPreview  = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c0.getPoints(48)), faintMat.clone());
             const leoPreview     = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c1.getPoints(80)), faintMat.clone());
             const tliPreview     = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c2.getPoints(64)), faintMat.clone());
+            // Lunar orbit ring preview (full ring, faint) — shown at LOI so orbit is visible immediately
+            const loPreview      = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c3.getPoints(80)), faintMat.clone());
             // Lunar orbit trace — grows point-by-point as the rocket orbits in Phase 3
             const LO_TRACE_MAX  = 1600;
             const loTraceBuf    = new Float32Array(LO_TRACE_MAX * 3);
@@ -1141,24 +1142,21 @@
                 loTraceGeo.attributes.position.needsUpdate = true;
                 loTraceGeo.setDrawRange(0, loTraceCount);
             }
-            // Powered descent arc — medium visibility
-            const desMat         = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false });
-            const descentPreview = new THREE.Line(new THREE.BufferGeometry().setFromPoints(c4.getPoints(64)), desMat);
             scene.add(ascentPreview);
             scene.add(leoPreview);
             scene.add(tliPreview);
-            // loPreview + descentPreview added on LOI (Phase 2 onComplete)
+            // loPreview + loTraceLine added at LOI (Phase 2 onComplete)
             showHud(`▲ TLI BURN INITIATED — ${site.name.toUpperCase()} // Moon intercept plotted`, '#00e5ff', 4000);
             dvBurst(c0.getPoint(0), color, launchDir.clone().negate(), 0.45);
 
-            // ── Rocket mesh + glow halo ───────────────────────────────────────────
+            // ── Rocket mesh + glow halo (same size as LEO launch dots) ───────────
             const rocket = new THREE.Mesh(
-                new THREE.SphereGeometry(0.3, 8, 8),
+                new THREE.SphereGeometry(0.07, 8, 8),
                 new THREE.MeshBasicMaterial({ color })
             );
             rocket.add(new THREE.Mesh(
-                new THREE.SphereGeometry(0.65, 8, 8),
-                new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35 })
+                new THREE.SphereGeometry(0.2, 8, 8),
+                new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4 })
             ));
             rocket.position.copy(c0.getPoint(0));
             scene.add(rocket);
@@ -1195,8 +1193,8 @@
             function cleanup() {
                 scene.remove(tLine); scene.remove(gLine);
                 scene.remove(ascentPreview); scene.remove(leoPreview);
-                scene.remove(tliPreview); scene.remove(loTraceLine);
-                scene.remove(descentPreview);
+                scene.remove(tliPreview); scene.remove(loPreview);
+                scene.remove(loTraceLine);
             }
 
             // ── GSAP Timeline ─────────────────────────────────────────────────────
@@ -1219,13 +1217,15 @@
                 onComplete: () => {
                     dvBurst(rocket.position.clone(), color, e2.clone());
                     showHud(`◎ LOI BURN — LUNAR ORBIT INSERTION // ${site.name.toUpperCase()} trajectory`, '#00e5ff', 3500);
+                    scene.add(loPreview);
                     scene.add(loTraceLine);
-                    scene.add(descentPreview);
                     tw.t = loInsertT; clearTrail();
                 }
             });
             // Phase 3 — Lunar parking orbit (1.5 revolutions, Moon's μ-derived period)
+            // onStart re-forces tw.t = loInsertT so GSAP captures the correct from-value
             tl.to(tw, { t: loInsertT + 1.5, duration: dur3, ease: 'none',
+                onStart:    () => { tw.t = loInsertT; },
                 onUpdate:   () => { tick(c3.getPoint(tw.t % 1)); appendLoTrace(rocket.position.clone()); },
                 onComplete: () => { dvBurst(rocket.position.clone(), color, e2.clone()); tw.t = 0; clearTrail(); }
             });
