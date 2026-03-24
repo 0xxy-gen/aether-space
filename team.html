@@ -63,10 +63,9 @@
     <!-- Navigation -->
     <nav class="content fixed top-0 w-full px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent" style="z-index:50;">
         <div class="flex items-center gap-16">
-            <a href="index.html"><img src="aether-logo.jpg" alt="AETHER" style="height:28px; filter: invert(1); opacity:0.9;"></a>
+            <a href="index.html"><img src="images/aether-logo.jpg" alt="AETHER" style="height:28px; filter: invert(1); opacity:0.9;"></a>
             <div class="hidden lg:flex gap-10">
                 <a href="index.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">VISION</a>
-                <a href="problem.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">PROBLEM</a>
                 <a href="solution.html" class="mono text-[9px] tracking-[0.3em] text-white/40 hover:text-cyan-400 transition-all">SOLUTION</a>
                 <a href="team.html" class="mono text-[9px] tracking-[0.3em] text-cyan-400 transition-all">TEAM</a>
             </div>
@@ -117,7 +116,7 @@
 
     <!-- Hero -->
     <main class="content px-10 lg:px-32 pt-40 pb-24">
-        <div class="max-w-5xl">
+        <div class="w-full">
             <div class="fade-up">
                 <div class="hud-line"></div>
                 <p class="mono text-[9px] tracking-[0.5em] text-cyan-400 uppercase mb-6">Node_04 / Crew_Manifest</p>
@@ -129,43 +128,79 @@
                 <span class="font-bold italic text-white/60">Launch Ecosystem</span>
             </h1>
 
-            <p class="text-base text-white/40 max-w-xl font-light leading-relaxed border-l border-cyan-500/20 pl-6 mb-20 fade-up-2">
-                Aether is built by people who have lived the problem — from launch operations to orbital mechanics research. We know the bottlenecks because we hit them ourselves.
-            </p>
 
             <!-- Team grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 fade-up-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 fade-up-3">
 
                 <div class="member-card">
-                    <div class="avatar">
-                        <span class="mono text-[10px] text-cyan-400/60">01</span>
+                    <div class="avatar" style="width:auto; height:auto; border:none; background:none; margin-bottom:20px; overflow:hidden;">
+                        <img src="images/Genna.png" alt="Co-Founder & CEO" style="width:100%; aspect-ratio:1/1; object-fit:cover; object-position:center top; border:1px solid rgba(0,229,255,0.15);">
                     </div>
                     <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Co-Founder &amp; CEO</p>
-                    <h3 class="text-lg font-semibold tracking-tight mb-1">Founder Name</h3>
-                    <p class="text-sm text-white/30 font-light mb-4">PLD Space</p>
-                    <p class="text-sm text-white/40 font-light leading-relaxed">Launch operations and mission planning background. Previously at PLD Space managing payload integration and rideshare logistics.</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Genna Ng</h3>
+                    <p class="text-sm text-white/30 font-light mb-4">Orbital Infrastructure, Launch Economics &amp; Space Systems</p>
+                    <ul class="text-sm text-white/40 font-light leading-relaxed space-y-2 mt-2">
+                        <li>Former Commercial Strategy &amp; Mission Planning @ PLD Space (€1B+ sovereign &amp; commercial launch pipeline)</li>
+                        <li>Former Satellite Engineer, CubeSat Structures &amp; Orbital Systems</li>
+                        <li>MSc Engineering Design &amp; Innovation, BEng Mechanical Engineering + Innovation &amp; Design (Dual Major) @ NUS</li>
+                        <li>Venture Partner &amp; Angel Investor, Space &amp; Frontier Tech</li>
+                    </ul>
                 </div>
 
                 <div class="member-card">
-                    <div class="avatar">
-                        <span class="mono text-[10px] text-cyan-400/60">02</span>
+                    <div class="avatar" style="width:auto; height:auto; border:none; background:none; margin-bottom:20px; overflow:hidden;">
+                        <img src="images/James.png" alt="Co-Founder & CTO" style="width:100%; aspect-ratio:1/1; object-fit:cover; object-position:center top; border:1px solid rgba(0,229,255,0.15);">
                     </div>
                     <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Co-Founder &amp; CTO</p>
-                    <h3 class="text-lg font-semibold tracking-tight mb-1">Founder Name</h3>
-                    <p class="text-sm text-white/30 font-light mb-4">Rocket Lab · UCL ML PhD</p>
-                    <p class="text-sm text-white/40 font-light leading-relaxed">Orbital mechanics and ML systems. PhD in machine learning from UCL, previously engineering at Rocket Lab on trajectory optimisation.</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">James Ang</h3>
+                    <p class="text-sm text-white/30 font-light mb-4">Machine Learning & Optimisation Systems</p>
+                    <ul class="text-sm text-white/40 font-light leading-relaxed space-y-2 mt-2">
+                        <li>PhD, Computer Science @ UCL (Optimisation &amp; Sequential Decision Systems)</li>
+                        <li>B.Sc. Applied Mathematics (Top in graduating cohort, Best Thesis Medal) @ NUS</li>
+                        <li>Former Researcher @ RIKEN (Advanced AI) &amp; Google TensorFlow</li>
+                        <li>Early diffusion models researcher cited by NVIDIA</li>
+                        <li>Scaled startup 0 → $500k ARR</li>
+                    </ul>
+                </div>
+
+                <div class="member-card">
+                    <div class="avatar" style="width:auto; height:auto; border:none; background:none; margin-bottom:20px; overflow:hidden;">
+                        <img src="images/Sandy.png" alt="Dr. Sandy Tirtey" style="width:100%; aspect-ratio:1/1; object-fit:cover; object-position:center top; border:1px solid rgba(0,229,255,0.15);">
+                    </div>
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Strategic Partner</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Dr. Sandy Tirtey</h3>
+                    <p class="text-sm text-white/30 font-light mb-4">Launch Infrastructure &amp; Orbital Systems</p>
+                    <ul class="text-sm text-white/40 font-light leading-relaxed space-y-2 mt-2">
+                        <li>Senior Director &amp; Ex-VP, Global Launch Services @ Rocket Lab</li>
+                        <li>PhD, Aerospace &amp; Hypersonics @ The von Karman Institute for Fluid Dynamics</li>
+                        <li>MSc, Mechanical Engineering @ Faculté Polytechnique de Mons</li>
+                        <li>Former Technical Lead, SCRAMSPACE Hypersonic Access-to-Space Program (UQ)</li>
+                    </ul>
                 </div>
 
                 <div class="member-card">
                     <div class="avatar">
-                        <span class="mono text-[10px] text-cyan-400/60">03</span>
+                        <span class="mono text-[10px] text-cyan-400/60">04</span>
                     </div>
-                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Co-Founder &amp; COO</p>
-                    <h3 class="text-lg font-semibold tracking-tight mb-1">Founder Name</h3>
-                    <p class="text-sm text-white/30 font-light mb-4">New Space Operations</p>
-                    <p class="text-sm text-white/40 font-light leading-relaxed">Mission architecture and commercial operations. Extensive experience structuring launch procurement and multi-stakeholder cislunar missions.</p>
+                    <p class="mono text-[8px] tracking-[0.4em] text-cyan-400/50 uppercase mb-2">Co-Founder</p>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Senior Launch Industry Partner (Confidential)</h3>
+                    <p class="text-sm text-white/30 font-light mb-4">Mission Planning &amp; Manifest Strategy</p>
+                    <ul class="text-sm text-white/40 font-light leading-relaxed space-y-2 mt-2">
+                        <li>Veteran launch mission manager across Ariane, Soyuz, Vega, and Falcon Programmes</li>
+                        <li>20+ years in launch operations, mission integration &amp; commercial launch services</li>
+                        <li>40+ orbital launch campaigns</li>
+                        <li>Former leader at a major global launch provider</li>
+                        <li>Identity disclosed to investors during diligence</li>
+                    </ul>
                 </div>
 
+            </div>
+
+            <!-- Logos -->
+            <div class="mt-20 fade-up-3">
+                <p class="mono text-[8px] tracking-[0.5em] text-white/20 uppercase mb-8">With collective experience from</p>
+                <img src="images/Logos.png" alt="Partner logos" style="max-width:100%; opacity:0.6;">
+                <p class="text-sm text-white/30 font-light mt-6">and 7+ LOIs across satellite operators, launch providers, and ecosystem partners.</p>
             </div>
 
         </div>
