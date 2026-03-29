@@ -62,12 +62,35 @@
         .contact-field input:focus, .contact-field textarea:focus { border-bottom-color: rgba(0,229,255,0.6); }
         .contact-field textarea { min-height: 100px; }
         .contact-field input.contact-error, .contact-field textarea.contact-error { border-bottom-color: rgba(248, 113, 113, 0.9); }
+        /* Mobile menu */
+        #mobile-menu { position: fixed; inset: 0; z-index: 45; background: #000; display: flex; flex-direction: column; justify-content: center; padding: 0 40px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        #mobile-menu.open { opacity: 1; pointer-events: auto; }
+        #mobile-menu a { display: block; font-family: 'JetBrains Mono', monospace; font-size: 22px; letter-spacing: 0.15em; color: rgba(255,255,255,0.45); text-transform: uppercase; text-decoration: none; padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.06); transition: color 0.2s; }
+        #mobile-menu a:last-child { border-bottom: none; }
+        #mobile-menu a:hover { color: #fff; }
+        #mobile-menu button { display: block; }
+        #hamburger-btn { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+        @media (max-width: 1023px) { #hamburger-btn { display: flex; } }
+        #hamburger-btn span { display: block; width: 20px; height: 1px; background: #fff; transition: transform 0.3s ease, opacity 0.3s ease; }
+        #hamburger-btn.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        #hamburger-btn.open span:nth-child(2) { opacity: 0; }
+        #hamburger-btn.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
     </style>
 </head>
 <body>
 
     <div class="bg-grid"></div>
     <div class="noise"></div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu">
+        <a href="/team/" onclick="closeMobileMenu()">TEAM</a>
+        <a href="/careers/" onclick="closeMobileMenu()">CAREERS</a>
+        <a href="/partnerships/" onclick="closeMobileMenu()">PARTNERSHIPS</a>
+        <a href="/faq/" onclick="closeMobileMenu()">FAQ</a>
+        <a href="/blog/" onclick="closeMobileMenu()">BLOG</a>
+        <button onclick="closeMobileMenu(); openContact();" class="interactive mono text-[11px] tracking-[0.3em] bg-white text-black px-6 py-3 font-medium mt-8 w-full cursor-pointer">CONTACT US →</button>
+    </div>
 
     <!-- Navigation -->
     <nav class="content fixed top-0 w-full px-8 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent" style="z-index:50;">
@@ -85,7 +108,8 @@
                 <p class="mono text-[8px] text-cyan-400 uppercase tracking-widest">System Latency</p>
                 <p class="mono text-[10px] text-white/60">0.0024ms</p>
             </div>
-            <button onclick="openContact()" class="mono text-[9px] tracking-[0.25em] bg-white text-black px-5 py-2 font-medium hover:bg-white/90 transition-colors cursor-pointer">CONTACT US</button>
+            <button onclick="openContact()" class="mono text-[9px] tracking-[0.25em] bg-white text-black px-5 py-2 font-medium hover:bg-white/90 transition-colors cursor-pointer hidden lg:block">CONTACT US</button>
+            <button id="hamburger-btn" onclick="toggleMobileMenu()" class="interactive" aria-label="Menu"><span></span><span></span><span></span></button>
         </div>
     </nav>
 
@@ -186,7 +210,19 @@
     <script>
         function openContact() { document.getElementById('contact-overlay').classList.add('open'); document.getElementById('contact-drawer').classList.add('open'); }
         function closeContact() { document.getElementById('contact-overlay').classList.remove('open'); document.getElementById('contact-drawer').classList.remove('open'); }
-        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeContact(); });
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
+        }
+        function openMobileMenu() {
+            document.getElementById('mobile-menu').classList.add('open');
+            document.getElementById('hamburger-btn').classList.add('open');
+        }
+        function closeMobileMenu() {
+            document.getElementById('mobile-menu').classList.remove('open');
+            document.getElementById('hamburger-btn').classList.remove('open');
+        }
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeContact(); closeMobileMenu(); } });
     </script>
 </body>
 </html>
