@@ -402,14 +402,15 @@
         const LOOK_END   = { x: 40,  y: 4,   z: -44  };  // right of Moon — Moon sits left of frame
         const LOOK_MARS  = { x: 58,  y: -22, z: -43  };  // slight rightward bias so Mars remains prominent and visible
 
-        // Mobile overview — camera left of scene, all three planets visible to the right
+        // Mobile overview — Earth shifted right to cluster with Moon/Mars away from text
         const isMobile = window.innerWidth < 768;
-        const CAM_START_MOBILE  = { x: -22, y: 12, z: 88 };
-        const LOOK_START_MOBILE = { x: 16,  y: -3, z: -12 };
-        const CAM_END_MOBILE    = { x: 26,  y: 7,  z: -5  };
-        const LOOK_END_MOBILE   = { x: 28,  y: 3,  z: -18 };
-        const CAM_MARS_MOBILE   = { x: 34,  y: -11, z: -22 };
-        const LOOK_MARS_MOBILE  = { x: 34,  y: -11, z: -22 };
+        const EARTH_MOBILE_POS  = new THREE.Vector3(24, 2, -10);
+        const CAM_START_MOBILE  = { x: 10, y: 10, z: 78 };
+        const LOOK_START_MOBILE = { x: 26,  y: 0, z: -15 };
+        const CAM_END_MOBILE    = { x: 28,  y: 12, z: 4  };
+        const LOOK_END_MOBILE   = { x: 32,  y: 6, z: -16 };
+        const CAM_MARS_MOBILE   = { x: 32,  y: 0, z: -12 };
+        const LOOK_MARS_MOBILE  = { x: 32,  y: -5, z: -20 };
 
         let scrollProgress2 = 0;
         let smoothProgress  = 0;   // lerped — decouples lookAt from GSAP scrub oscillations
@@ -446,12 +447,14 @@
             createInfrastructure();
 
             if (isMobile) {
-                // Bring Moon and Mars closer to Earth and scale them up
-                moon.position.set(30, 3, -20);
+                // Shift Earth + its satellite shells so all planets cluster on the right (away from text)
+                earth.position.copy(EARTH_MOBILE_POS);
+                satSystem.forEach(s => s.mesh.position.copy(EARTH_MOBILE_POS));
+                moon.position.set(32, 7, -16);
                 moon.scale.setScalar(1.8);
-                mars.position.set(36, -12, -24);
-                mars.scale.setScalar(4.5);
-                camera.fov = 55;
+                mars.position.set(32, -5, -20);
+                mars.scale.setScalar(3.5);
+                camera.fov = 62;
                 camera.updateProjectionMatrix();
                 camera.position.set(CAM_START_MOBILE.x, CAM_START_MOBILE.y, CAM_START_MOBILE.z);
                 camera.lookAt(LOOK_START_MOBILE.x, LOOK_START_MOBILE.y, LOOK_START_MOBILE.z);
