@@ -124,12 +124,13 @@
             </div>
             <button onclick="closeContact()" class="mono text-[10px] text-white/30 hover:text-white transition-colors cursor-pointer mt-1">✕ CLOSE</button>
         </div>
-        <div class="contact-field"><label>Your Name</label><input type="text" placeholder="Full name"></div>
-        <div class="contact-field"><label>Your Company</label><input type="text" placeholder="Your organisation"></div>
-        <div class="contact-field"><label>Your Role</label><input type="text" placeholder="Your job title"></div>
-        <div class="contact-field"><label>Your Email</label><input type="email" placeholder="you@example.com"></div>
-        <div class="contact-field"><label>Your Message</label><textarea placeholder="Tell us what you're working on…"></textarea></div>
-        <button class="mt-4 w-full bg-white text-black font-semibold py-3 text-sm tracking-wide hover:bg-white/90 transition-colors cursor-pointer">Submit →</button>
+        <div class="contact-field"><label>Your Name</label><input type="text" name="drawer-name" placeholder="Full name"></div>
+        <div class="contact-field"><label>Your Company</label><input type="text" name="drawer-company" placeholder="Your organisation"></div>
+        <div class="contact-field"><label>Your Role</label><input type="text" name="drawer-role" placeholder="Your job title"></div>
+        <div class="contact-field"><label>Your Email</label><input type="email" name="drawer-email" placeholder="you@example.com"></div>
+        <div class="contact-field"><label>Your Message</label><textarea name="drawer-message" placeholder="Tell us what you're working on…"></textarea></div>
+        <p id="drawer-status" class="mono text-[9px] mb-3 min-h-[16px]"></p>
+        <button onclick="submitContactDrawer()" id="drawer-submit" class="mt-2 w-full bg-white text-black font-semibold py-3 text-sm tracking-wide hover:bg-white/90 transition-colors cursor-pointer">Submit →</button>
     </div>
 
     <!-- Main -->
@@ -344,6 +345,36 @@
         function openContact() { document.getElementById('contact-overlay').classList.add('open'); document.getElementById('contact-drawer').classList.add('open'); }
         function closeContact() { document.getElementById('contact-overlay').classList.remove('open'); document.getElementById('contact-drawer').classList.remove('open'); }
         document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeContact(); });
+
+        async function submitContactDrawer() {
+            const drawer = document.getElementById('contact-drawer');
+            const status = document.getElementById('drawer-status');
+            const btn = document.getElementById('drawer-submit');
+            const name = drawer.querySelector('[name="drawer-name"]').value.trim();
+            const email = drawer.querySelector('[name="drawer-email"]').value.trim();
+            const company = drawer.querySelector('[name="drawer-company"]').value.trim();
+            const role = drawer.querySelector('[name="drawer-role"]').value.trim();
+            const message = drawer.querySelector('[name="drawer-message"]').value.trim();
+            if (!name || !email || !message) {
+                status.textContent = 'Please fill in your name, email, and message.';
+                status.style.color = 'rgba(252,165,165,0.9)'; return;
+            }
+            btn.disabled = true; btn.textContent = 'Sending...'; status.textContent = '';
+            try {
+                const res = await fetch('https://aether-contact.gennangqy.workers.dev', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, company, message: (role ? 'Role: ' + role + '\n\n' : '') + message, page: 'contact-drawer-faq', submittedAt: new Date().toISOString() })
+                });
+                const payload = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(payload.error || 'Please try again.');
+                drawer.querySelectorAll('[name^="drawer-"]').forEach(el => el.value = '');
+                status.textContent = payload.message || 'Message sent. We will be in touch soon.';
+                status.style.color = '#67e8f9';
+            } catch (err) {
+                status.textContent = err.message || 'Something went wrong. Please try again.';
+                status.style.color = 'rgba(252,165,165,0.9)';
+            } finally { btn.disabled = false; btn.textContent = 'Submit →'; }
+        }
 
         function toggleFaq(btn) {
             const answer = btn.nextElementSibling;
