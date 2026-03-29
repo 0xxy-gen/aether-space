@@ -1901,6 +1901,7 @@
         // Single HUD helper — replaces any active message immediately
         let hudTimeout = null;
         function showHud(text, color, duration) {
+            if (isMobile) return;
             const hud  = document.getElementById('mission-hud');
             const txt  = document.getElementById('mission-hud-text');
             if (hudTimeout) { clearTimeout(hudTimeout); hudTimeout = null; }
