@@ -295,17 +295,19 @@
             if (extra) messageParts.push('Anything else:\n' + extra);
 
             try {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('email', email);
+                formData.append('company', role);
+                formData.append('message', messageParts.join('\n\n') || '(No message)');
+                formData.append('page', 'careers');
+                formData.append('submittedAt', new Date().toISOString());
+                const cvFile = document.getElementById('cv-upload').files[0];
+                if (cvFile) formData.append('cv', cvFile);
+
                 const res = await fetch('https://aether-contact.gennangqy.workers.dev', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        company: role,
-                        message: messageParts.join('\n\n') || '(No message)',
-                        page: 'careers',
-                        submittedAt: new Date().toISOString()
-                    })
+                    body: formData
                 });
                 const payload = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(payload.error || 'Please try again.');
