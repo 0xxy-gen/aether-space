@@ -39,7 +39,7 @@
         #page2.visible, #page3.visible { opacity: 1; }
 
         /* Click hint */
-        #click-hint { position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; white-space: nowrap; transition: opacity 0.6s ease; }
+        #click-hint { position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; white-space: nowrap; transition: opacity 0.6s ease; max-width: 90vw; white-space: normal; text-align: center; }
         @keyframes hintPulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
         #click-hint { animation: hintPulse 2.8s ease-in-out infinite; }
 
