@@ -402,15 +402,7 @@
         const LOOK_END   = { x: 40,  y: 4,   z: -44  };  // right of Moon — Moon sits left of frame
         const LOOK_MARS  = { x: 58,  y: -22, z: -43  };  // slight rightward bias so Mars remains prominent and visible
 
-        // Mobile overview — Earth shifted right to cluster with Moon/Mars away from text
         const isMobile = window.innerWidth < 768;
-        const EARTH_MOBILE_POS  = new THREE.Vector3(24, 2, -10);
-        const CAM_START_MOBILE  = { x: 10, y: 10, z: 78 };
-        const LOOK_START_MOBILE = { x: 26,  y: 0, z: -15 };
-        const CAM_END_MOBILE    = { x: 28,  y: 12, z: 4  };
-        const LOOK_END_MOBILE   = { x: 32,  y: 6, z: -16 };
-        const CAM_MARS_MOBILE   = { x: 32,  y: 0, z: -12 };
-        const LOOK_MARS_MOBILE  = { x: 32,  y: -5, z: -20 };
 
         let scrollProgress2 = 0;
         let smoothProgress  = 0;   // lerped — decouples lookAt from GSAP scrub oscillations
@@ -446,22 +438,8 @@
 
             createInfrastructure();
 
-            if (isMobile) {
-                // Shift Earth + its satellite shells so all planets cluster on the right (away from text)
-                earth.position.copy(EARTH_MOBILE_POS);
-                satSystem.forEach(s => s.mesh.position.copy(EARTH_MOBILE_POS));
-                moon.position.set(32, 7, -16);
-                moon.scale.setScalar(1.8);
-                mars.position.set(32, -5, -20);
-                mars.scale.setScalar(3.5);
-                camera.fov = 62;
-                camera.updateProjectionMatrix();
-                camera.position.set(CAM_START_MOBILE.x, CAM_START_MOBILE.y, CAM_START_MOBILE.z);
-                camera.lookAt(LOOK_START_MOBILE.x, LOOK_START_MOBILE.y, LOOK_START_MOBILE.z);
-            } else {
-                camera.position.set(CAM_START.x, CAM_START.y, CAM_START.z);
-                camera.lookAt(LOOK_START.x, LOOK_START.y, LOOK_START.z);
-            }
+            camera.position.set(CAM_START.x, CAM_START.y, CAM_START.z);
+            camera.lookAt(LOOK_START.x, LOOK_START.y, LOOK_START.z);
 
             animate();
             document.getElementById('loader').style.opacity = '0';
@@ -911,12 +889,12 @@
             smoothProgress2 += (scrollProgress2 - smoothProgress2) * 0.08;
 
             // Camera: three-stage scroll
-            const camEnd  = isMobile ? CAM_END_MOBILE  : CAM_END;
-            const camMars = isMobile ? CAM_MARS_MOBILE : CAM_MARS;
-            const lookEnd  = isMobile ? LOOK_END_MOBILE  : LOOK_END;
-            const lookMars = isMobile ? LOOK_MARS_MOBILE : LOOK_MARS;
-            const camStart = isMobile ? CAM_START_MOBILE : CAM_START;
-            const lookStart = isMobile ? LOOK_START_MOBILE : LOOK_START;
+            const camEnd  = CAM_END;
+            const camMars = CAM_MARS;
+            const lookEnd  = LOOK_END;
+            const lookMars = LOOK_MARS;
+            const camStart = CAM_START;
+            const lookStart = LOOK_START;
 
             if (smoothProgress2 > 0.01) {
                 // Stage 3: zoom into Mars
