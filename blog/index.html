@@ -112,27 +112,44 @@
     </div>
 
     <!-- Main -->
-    <main class="content min-h-screen flex items-center px-10 lg:px-32 pt-32 pb-24">
-        <div class="w-full max-w-2xl">
+    <main class="content px-10 lg:px-32 pt-36 pb-24">
 
-            <h1 class="text-4xl md:text-5xl lg:text-6xl tracking-tighter mb-6 leading-[1.0] fade-up-2">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl tracking-tighter mb-16 leading-[1.0] fade-up-2">
                 <span class="font-light text-white/60">Transmissions from</span><br/>
                 <span class="font-bold">mission control.</span>
             </h1>
 
-            <div class="fade-up-3 flex items-center gap-4 mt-12 mb-10">
-                <p class="mono text-[11px] tracking-[0.3em] text-white/25 uppercase">Coming soon</p>
-                <span class="cursor"></span>
+            <!-- Post grid -->
+            <div class="fade-up-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+
+                <!-- POST CARD — duplicate this block for each new post -->
+                <a href="/blog/why-orbital-logistics-needs-an-operating-system/" class="group block">
+                    <!-- Image -->
+                    <div class="w-full aspect-[4/3] rounded-lg overflow-hidden mb-6 border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300">
+                        <img src="../images/launch-market-map.png" alt="Global orbital launch market map" class="w-full h-full object-contain">
+                    </div>
+                    <!-- Text -->
+                    <div class="flex items-start justify-between gap-4 mb-3">
+                        <h2 class="text-xl md:text-2xl font-bold tracking-tighter leading-snug group-hover:text-white/80 transition-colors">The Coordination Paradox: Why More Launch Supply Makes the Orbital Market Harder, Not Easier</h2>
+                        <span class="text-white/40 group-hover:text-white transition-colors mt-1 flex-shrink-0 text-lg">→</span>
+                    </div>
+                    <p class="mono text-[9px] tracking-[0.25em] text-cyan-400/70 uppercase mb-2">May 2026</p>
+                    <p class="text-sm text-white/40 font-light leading-relaxed">More rockets do not produce a simpler market. In the most structurally important way, the prevailing thesis on commercial launch is wrong about the conclusion.</p>
+                </a>
+                <!-- END POST CARD -->
+
             </div>
 
-            <div class="fade-up-3">
+            <!-- Subscribe -->
+            <div class="mt-24 pt-10 border-t border-white/[0.06]">
+                <p class="mono text-[9px] tracking-[0.3em] text-white/25 uppercase mb-6">Get new posts by email</p>
                 <form class="flex gap-0" onsubmit="handleSubscribe(event)">
                     <input id="sub-email" type="email" placeholder="you@example.com" class="bg-transparent border border-white/12 border-r-0 text-white text-sm font-light px-4 py-3 outline-none focus:border-cyan-400/50 transition-colors w-64 placeholder:text-white/20">
                     <button type="submit" class="mono text-[9px] tracking-[0.25em] bg-cyan-400 hover:bg-cyan-300 text-black font-semibold px-6 py-3 transition-colors cursor-pointer whitespace-nowrap">SUBSCRIBE →</button>
                 </form>
                 <p id="sub-status" class="mono text-[9px] text-cyan-400/70 mt-3 min-h-[16px]"></p>
             </div>
-        </div>
+
     </main>
 
     <footer class="relative z-10 px-10 lg:px-32 py-5 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between ">
